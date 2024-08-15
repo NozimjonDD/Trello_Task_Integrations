@@ -19,7 +19,7 @@ urlpatterns += i18n_patterns(
 )
 
 urlpatterns += [
-    path("api", include('api.urls')),
+    path("api/", include('api.urls')),
 ]
 
 # Debug-specific URL patterns

@@ -3,6 +3,8 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin, GroupAdmin as DjangoGroupAdmin
 from django.utils.translation import gettext_lazy as _
 
+from django.utils.html import format_html
+
 from users import models
 
 admin.site.unregister(Group)
@@ -24,13 +26,16 @@ class AccountSettingsInline(admin.StackedInline):
 @admin.register(models.User)
 class UserAdmin(DjangoUserAdmin):
     list_display = (
-        "phone_number", "username", "first_name",
+        "phone_number", "username", "profile_pic_html", "first_name",
         "last_name", "middle_name", "is_active", "is_staff", "is_superuser", "date_joined", "id",
     )
     list_display_links = ("phone_number",)
     fieldsets = (
         (None, {"fields": ("phone_number", "username", "password")}),
-        (_("Personal info"), {"fields": ("first_name", "last_name", "middle_name", "date_of_birth")}),
+        (
+            _("Personal info"),
+            {"fields": ("first_name", "last_name", "middle_name", "profile_picture", "date_of_birth")}
+        ),
         (
             _("Permissions"),
             {
@@ -56,3 +61,9 @@ class UserAdmin(DjangoUserAdmin):
     )
     ordering = ("-date_joined",)
     inlines = (AccountSettingsInline,)
+
+    def profile_pic_html(self, obj):
+        if obj.profile_picture:
+            return format_html(f'<img src="{obj.profile_picture.url}" width="50" height="50";">')
+
+    profile_pic_html.short_description = _("Profile picture")

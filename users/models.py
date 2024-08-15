@@ -34,6 +34,12 @@ class User(AbstractUser, BaseModel):
     middle_name = models.CharField(_("middle name"), max_length=150, blank=True)
 
     date_of_birth = models.DateField(_("date of birth"), null=True, blank=True)
+    profile_picture = models.ImageField(
+        verbose_name=_("profile picture"),
+        upload_to="profile_pictures/",
+        null=True,
+        blank=True,
+    )
 
     EMAIL_FIELD = None
     USERNAME_FIELD = "phone_number"
