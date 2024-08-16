@@ -1,31 +1,13 @@
-from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
-from users import models, utils
-
-
-class PhoneNumberField(serializers.CharField):
-    def __init__(self, **kwargs):
-        kwargs["max_length"] = 13
-        kwargs["min_length"] = 13
-        kwargs["validators"] = [utils.phone_number_validator]
-        super().__init__(**kwargs)
-
-
-class PasswordField(serializers.CharField):
-    def __init__(self, **kwargs):
-        kwargs["write_only"] = True
-        kwargs["style"] = {"input_type": "password"}
-        kwargs["min_length"] = 8
-        kwargs["max_length"] = 64
-        kwargs["validators"] = [validate_password]
-        super().__init__(**kwargs)
+from users import models
+from . import fields as custom_fields
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    phone_number = PhoneNumberField()
-    password = PasswordField()
+    phone_number = custom_fields.PhoneNumberField()
+    password = custom_fields.PasswordField()
     secret = serializers.CharField(max_length=50, read_only=True)
 
     class Meta:
@@ -58,8 +40,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         except models.User.DoesNotExist:
             validated_data["is_active"] = False
             user = super().create(validated_data=validated_data)
-            user.set_password(password)
-            user.save()
+        user.set_password(password)
+        user.save()
         return user
 
     def to_representation(self, instance):
@@ -67,3 +49,74 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         otp = instance.generate_otp()
         data["secret"] = otp.secret
         return data
+
+
+class UserRegisterConfirmSerializer(serializers.ModelSerializer):
+    secret = serializers.CharField(max_length=100, write_only=True)
+    otp = serializers.CharField(
+        max_length=10,
+        min_length=4,
+        error_messages={
+            "min_length": _("OTP must be at least 4 characters long."),
+            "max_length": _("OTP must be at most 10 characters long."),
+        },
+        write_only=True
+    )
+
+    class Meta:
+        model = models.User
+        fields = (
+            "id",
+            "phone_number",
+            "secret",
+            "otp",
+        )
+        extra_kwargs = {
+            "phone_number": {"read_only": True},
+        }
+
+    def validate(self, attrs):
+        secret = attrs.get("secret")
+        otp = attrs.get("otp")
+
+        try:
+            user_otp = models.UserOTP.objects.get(
+                secret=secret,
+                is_confirmed=False,
+                user__is_deleted=False,
+            )
+        except models.UserOTP.DoesNotExist:
+            raise serializers.ValidationError(
+                code="invalid_secret",
+                detail={
+                    "secret": [_("Invalid secret.")]
+                }
+            )
+
+        if user_otp.is_expired():
+            raise serializers.ValidationError(
+                code="expired_otp",
+                detail={
+                    "otp": [_("OTP is expired.")]
+                }
+            )
+
+        if user_otp.code != otp:
+            raise serializers.ValidationError(
+                code="invalid_otp",
+                detail={
+                    "otp": [_("Invalid OTP.")]
+                }
+            )
+        return attrs
+
+    def create(self, validated_data):
+
+        user_otp = models.UserOTP.objects.get(secret=validated_data["secret"])
+        user = user_otp.user
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+
+        user_otp.is_confirmed = True
+        user_otp.save(update_fields=["is_confirmed"])
+        return user

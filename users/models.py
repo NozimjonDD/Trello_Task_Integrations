@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from django.contrib.auth.models import AbstractUser, Group as AbstractGroup
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext_lazy as _
@@ -62,7 +64,7 @@ class User(AbstractUser, BaseModel):
         otp = self.user_otps.filter(
             is_deleted=False,
             is_confirmed=False,
-            created_at__gt=timezone.now() - timezone.timedelta(minutes=1)
+            created_at__gt=timezone.now() - timezone.timedelta(seconds=settings.OTP_EXPIRATION_TIME)
         ).first()
 
         if otp:
@@ -127,6 +129,6 @@ class UserOTP(BaseModel):
     def is_expired(self):
         if self.is_confirmed or self.is_deleted:
             return True
-        if timezone.now() - self.created_at > timezone.timedelta(minutes=1):
+        if timezone.now() - self.created_at > timezone.timedelta(seconds=settings.OTP_EXPIRATION_TIME):
             return True
         return False

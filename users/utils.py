@@ -1,9 +1,15 @@
 import secrets
+
+from django.conf import settings
+
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
 
 def generate_otp(digits=4) -> str:
+    if settings.DEBUG:
+        return "0000"
+
     num = secrets.randbelow(10 ** digits)
     return f"{num:0{digits}d}"
 
