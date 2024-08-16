@@ -80,6 +80,9 @@ JAZZMIN_SETTINGS = {
     "order_with_respect_to": [
 
         "users",
+        "users.User",
+        "users.GroupProxyModel",
+        "users.UserOTP",
         "common",
     ],
 
@@ -89,6 +92,7 @@ JAZZMIN_SETTINGS = {
         "users": "fas fa-users-cog",
         "users.User": "fas fa-user",
         "users.GroupProxyModel": "fas fa-users",
+        "users.UserOTP": "fas fa-key",
 
         "common": "fas fa-cogs",
     },

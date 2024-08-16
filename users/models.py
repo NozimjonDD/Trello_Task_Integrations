@@ -1,8 +1,11 @@
 from django.contrib.auth.models import AbstractUser, Group as AbstractGroup
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+
 from django.db import models
 from common.models import BaseModel
+from . import utils
 
 
 class User(AbstractUser, BaseModel):
@@ -12,7 +15,8 @@ class User(AbstractUser, BaseModel):
         error_messages={
             "unique": _("A user with that phone number already exists."),
         },
-        max_length=13
+        max_length=13,
+        validators=[utils.phone_number_validator]
     )
     username_validator = UnicodeUsernameValidator()
     username = models.CharField(
@@ -54,6 +58,19 @@ class User(AbstractUser, BaseModel):
     def __str__(self):
         return self.phone_number
 
+    def generate_otp(self):
+        otp = self.user_otps.filter(
+            is_deleted=False,
+            is_confirmed=False,
+            created_at__gt=timezone.now() - timezone.timedelta(minutes=1)
+        ).first()
+
+        if otp:
+            return otp
+
+        otp = UserOTP.objects.create(user=self, code=utils.generate_otp())
+        return otp
+
 
 class AccountSettings(BaseModel):
     class Meta:
@@ -89,3 +106,27 @@ class GroupProxyModel(AbstractGroup):
         verbose_name = _("group")
         verbose_name_plural = _("groups")
         ordering = ["name"]
+
+
+class UserOTP(BaseModel):
+    class Meta:
+        db_table = "user_otp"
+        verbose_name = _("user OTP")
+        verbose_name_plural = _("user OTPs")
+
+    user = models.ForeignKey(
+        to="User", on_delete=models.CASCADE, related_name="user_otps", verbose_name=_("user")
+    )
+    code = models.CharField(verbose_name=_("code"), max_length=10)
+    secret = models.CharField(verbose_name=_("secret"), max_length=50, unique=True, default=utils.generate_secret)
+    is_confirmed = models.BooleanField(verbose_name=_("is confirmed"), default=False)
+
+    def __str__(self):
+        return str(self.created_at)
+
+    def is_expired(self):
+        if self.is_confirmed or self.is_deleted:
+            return True
+        if timezone.now() - self.created_at > timezone.timedelta(minutes=1):
+            return True
+        return False

@@ -67,3 +67,19 @@ class UserAdmin(DjangoUserAdmin):
             return format_html(f'<img src="{obj.profile_picture.url}" width="50" height="50";">')
 
     profile_pic_html.short_description = _("Profile picture")
+
+
+@admin.register(models.UserOTP)
+class UserOTPAdmin(admin.ModelAdmin):
+    list_display = ("user", "code", "is_confirmed", "is_expired", "created_at")
+    list_filter = ("is_confirmed", "created_at",)
+    search_fields = ("user__phone_number", "code", "secret",)
+    ordering = ("-created_at",)
+
+    def is_expired(self, obj):
+        return obj.is_expired()
+
+    is_expired.boolean = True
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("user")
