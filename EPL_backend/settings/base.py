@@ -216,3 +216,6 @@ SIMPLE_JWT = {
 }
 
 OTP_EXPIRATION_TIME = 120  # seconds
+
+# SPORTMONKS
+SPORTMONKS_APIKEY = os.environ.get("SPORTMONKS_APIKEY", default="dummy")
