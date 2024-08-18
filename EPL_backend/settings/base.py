@@ -38,6 +38,8 @@ DJANGO_APPS = [
 MY_APPS = [
     "users.apps.UsersConfig",
     "common.apps.CommonConfig",
+    "finance.apps.FinanceConfig",
+    "notifications.apps.NotificationsConfig",
 ]
 THIRD_PARTY_APPS = [
     "rest_framework",
