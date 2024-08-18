@@ -476,8 +476,9 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-# End of https://www.toptal.com/developers/gitignore/api/django,python,linux,pycharm+all,jetbrains+all,windows,visualstudiocode,vuejs,redis
+# Migrations
+*/apps/fantasy/migrations/*
+!apps/fantasy/migrations/__init__.py
 */migrations/*
 !*/migrations/__init__.py
 # Applications
