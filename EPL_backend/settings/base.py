@@ -40,6 +40,7 @@ MY_APPS = [
     "common.apps.CommonConfig",
     "finance.apps.FinanceConfig",
     "notifications.apps.NotificationsConfig",
+    "accounts.apps.AccountsConfig",
 ]
 THIRD_PARTY_APPS = [
     "rest_framework",
