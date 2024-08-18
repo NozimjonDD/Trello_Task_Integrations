@@ -1,6 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from users import utils
+from apps.users import utils
 
 
 class PhoneNumberField(serializers.CharField):

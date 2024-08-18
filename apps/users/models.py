@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
 from django.db import models
-from common.models import BaseModel
+from apps.common.models import BaseModel
 from . import utils
 
 

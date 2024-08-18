@@ -4,11 +4,11 @@ from django.conf import settings
 import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
-import users.utils
+
+import apps.users.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('users', '0002_user_profile_picture'),
     ]
@@ -17,7 +17,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='phone_number',
-            field=models.CharField(error_messages={'unique': 'A user with that phone number already exists.'}, max_length=13, unique=True, validators=[django.core.validators.RegexValidator(message="Phone number must be entered in the format: '+99890 123 45 67'. Up to 13 digits allowed.", regex='^\\+998\\d{9}$')], verbose_name='phone number'),
+            field=models.CharField(error_messages={'unique': 'A user with that phone number already exists.'},
+                                   max_length=13, unique=True, validators=[django.core.validators.RegexValidator(
+                    message="Phone number must be entered in the format: '+99890 123 45 67'. Up to 13 digits allowed.",
+                    regex='^\\+998\\d{9}$')], verbose_name='phone number'),
         ),
         migrations.CreateModel(
             name='UserOTP',
@@ -28,9 +31,11 @@ class Migration(migrations.Migration):
                 ('is_deleted', models.BooleanField(default=False, verbose_name='Is deleted')),
                 ('deleted_at', models.DateTimeField(blank=True, null=True, verbose_name='Deleted at')),
                 ('code', models.CharField(max_length=10, verbose_name='code')),
-                ('secret', models.CharField(default=users.utils.generate_secret, max_length=50, unique=True, verbose_name='secret')),
+                ('secret', models.CharField(default=apps.users.utils.generate_secret, max_length=50, unique=True,
+                                            verbose_name='secret')),
                 ('is_confirmed', models.BooleanField(default=False, verbose_name='is confirmed')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_otps', to=settings.AUTH_USER_MODEL, verbose_name='user')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_otps',
+                                           to=settings.AUTH_USER_MODEL, verbose_name='user')),
             ],
             options={
                 'verbose_name': 'user OTP',
