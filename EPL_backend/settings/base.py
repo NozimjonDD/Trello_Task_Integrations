@@ -38,6 +38,8 @@ DJANGO_APPS = [
 MY_APPS = [
     "apps.users.apps.UsersConfig",
     "apps.common.apps.CommonConfig",
+    "apps.fantasy.apps.FantasyConfig",
+    "apps.football.apps.FootballConfig",
     "apps.finance.apps.FinanceConfig",
     "apps.notification.apps.NotificationConfig",
 ]
