@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.db import models
 from apps.common.models import BaseModel
 from . import utils
+from ..common.data import UserRoleChoices
 
 
 class User(AbstractUser, BaseModel):
@@ -35,6 +36,7 @@ class User(AbstractUser, BaseModel):
         null=True,
         blank=True
     )
+    role = models.CharField(choices=UserRoleChoices.choices, default=UserRoleChoices.USER)
     first_name = models.CharField(_("first name"), max_length=150, blank=True)
     last_name = models.CharField(_("last name"), max_length=150, blank=True)
     middle_name = models.CharField(_("middle name"), max_length=150, blank=True)
