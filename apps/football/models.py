@@ -18,12 +18,13 @@ class League(FootballBaseModel):
         verbose_name_plural = _("Leagues")
 
     name = models.CharField(max_length=200, verbose_name=_("Name"))
-    short_code = models.CharField(max_length=50, verbose_name=_("Short code"))
+    short_code = models.CharField(max_length=50, verbose_name=_("Short code"), null=True, blank=True)
     image_path = models.URLField(verbose_name=_("Image path"))
     type = models.CharField(verbose_name=_("Type"), max_length=100)
     sub_type = models.CharField(verbose_name=_("Sub type"), max_length=100)
     category_id = models.IntegerField()
     has_jerseys = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name

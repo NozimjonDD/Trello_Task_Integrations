@@ -1,11 +1,19 @@
 from django.contrib import admin
 
-from . import models
+from django.utils.translation import gettext_lazy as _
+
+from . import models, utils
+
+
+@admin.action(description=_("Update leagues"))
+def update_leagues_action(model_admin, request, queryset):
+    utils.update_leagues()
+    model_admin.message_user(request, _("Leagues updated!"))
 
 
 @admin.register(models.League)
 class LeagueAdmin(admin.ModelAdmin):
-    pass
+    actions = (update_leagues_action,)
 
 
 @admin.register(models.Season)
