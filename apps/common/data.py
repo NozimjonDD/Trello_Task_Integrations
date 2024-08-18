@@ -9,3 +9,9 @@ class LeagueStatusType(models.TextChoices):
 class TeamStatusChoices(models.TextChoices):
     ACTIVE = 'Active', 'active',
     INACTIVE = 'Inactive', 'inactive',
+
+
+class UserRoleChoices(models.TextChoices):
+    USER = 'User', 'user',
+    ADMIN = 'Admin', 'admin',
+    MODERATOR = 'Moderator', 'moderator',
