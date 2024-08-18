@@ -1,5 +1,10 @@
 from django.urls import path, include
 
 urlpatterns = [
-    # path("v1/auth/", include("api.v1.auth.urls")),
+    # Fantasy
+    path("fantasy/", include("api.v1.site.fantasy.urls")),
+
+    # Football
+    path("football/", include("api.v1.site.football.urls")),
+
 ]
