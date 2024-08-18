@@ -30,3 +30,7 @@ class SportMonksAPIClient:
     def fetch_leagues(self, page=1, per_page=100):
         endpoint = f"/{SPORT}/leagues?page={page}&per_page={per_page}"
         return self.fetch_base(endpoint)
+
+    def fetch_seasons(self, page=1, per_page=100):
+        endpoint = f"/{SPORT}/seasons?page={page}&per_page={per_page}"
+        return self.fetch_base(endpoint)

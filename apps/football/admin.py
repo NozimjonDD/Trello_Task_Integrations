@@ -11,6 +11,12 @@ def update_leagues_action(model_admin, request, queryset):
     model_admin.message_user(request, _("Leagues updated!"))
 
 
+@admin.action(description=_("Update seasons"))
+def update_seasons_action(model_admin, request, queryset):
+    utils.update_seasons()
+    model_admin.message_user(request, _("Seasons updated!"))
+
+
 @admin.register(models.League)
 class LeagueAdmin(admin.ModelAdmin):
     actions = (update_leagues_action,)
@@ -18,7 +24,7 @@ class LeagueAdmin(admin.ModelAdmin):
 
 @admin.register(models.Season)
 class SeasonAdmin(admin.ModelAdmin):
-    pass
+    actions = (update_seasons_action,)
 
 
 @admin.register(models.Round)

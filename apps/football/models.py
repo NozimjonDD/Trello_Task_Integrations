@@ -49,7 +49,7 @@ class Season(FootballBaseModel):
     games_in_current_week = models.BooleanField(verbose_name=_("Games in current week"), default=False)
 
     def __str__(self):
-        return self.name
+        return f"{self.league} - {self.name}"
 
 
 class Round(FootballBaseModel):
