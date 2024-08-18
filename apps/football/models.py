@@ -162,10 +162,12 @@ class Player(FootballBaseModel):
     class Meta:
         db_table = "player"
 
-    club = models.ForeignKey(to="Club", on_delete=models.CASCADE, related_name="players", verbose_name=_("Club"))
+    club = models.ForeignKey(
+        to="Club", on_delete=models.CASCADE, related_name="players", verbose_name=_("Club"), null=True
+    )
     position = models.ForeignKey(to="Position", on_delete=models.SET_NULL, related_name="+", null=True)
-    country_id = models.IntegerField()
-    nationality_id = models.IntegerField()
+    country_id = models.IntegerField(null=True)
+    nationality_id = models.IntegerField(null=True)
     profile_picture = models.ImageField(upload_to="football/player/profile_picture/", null=True, blank=True)
     profile_picture_path = models.URLField()
 
@@ -174,8 +176,8 @@ class Player(FootballBaseModel):
     full_name = models.CharField(max_length=200)
     common_name = models.CharField(max_length=200)
 
-    date_of_birth = models.DateField()
-    gender = models.CharField(max_length=50)
+    date_of_birth = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=50, null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
     weight = models.IntegerField(null=True, blank=True)
 

@@ -67,3 +67,39 @@ def update_seasons():
 
         has_more = resp_data["pagination"]["has_more"]
         page += 1
+
+
+def update_players():
+    page = 1
+    has_more = True
+
+    while has_more:
+        success, resp_data = service.SportMonksAPIClient().fetch_players(page=page, per_page=50)
+
+        if not success:
+            break
+
+        players_data = resp_data["data"]
+
+        with transaction.atomic():
+
+            for player in players_data:
+                models.Player.objects.update_or_create(
+                    remote_id=player["id"],
+                    defaults={
+                        "country_id": player["country_id"],
+                        "nationality_id": player["nationality_id"],
+                        "profile_picture_path": player["image_path"],
+                        "first_name": player["firstname"],
+                        "last_name": player["lastname"],
+                        "full_name": player["name"],
+                        "common_name": player["common_name"],
+                        "date_of_birth": player["date_of_birth"],
+                        "gender": player["gender"],
+                        "height": player["height"],
+                        "weight": player["weight"],
+                    }
+                )
+
+        has_more = resp_data["pagination"]["has_more"]
+        page += 1
