@@ -27,10 +27,15 @@ class SportMonksAPIClient:
             return False, {"error": e}
         return True, data
 
-    def fetch_leagues(self, page=1, per_page=100):
+    def fetch_leagues(self, page=1, per_page=50):
         endpoint = f"/{SPORT}/leagues?page={page}&per_page={per_page}"
         return self.fetch_base(endpoint)
 
-    def fetch_seasons(self, page=1, per_page=100):
+    def fetch_seasons(self, page=1, per_page=50):
         endpoint = f"/{SPORT}/seasons?page={page}&per_page={per_page}"
+        return self.fetch_base(endpoint)
+
+    def fetch_players(self, page=1, per_page=50):
+        endpoint = f"/{SPORT}/players?page={page}&per_page={per_page}"
+        endpoint += "&include=sport;country;nationality;city;position;metadata;transfers;teams"
         return self.fetch_base(endpoint)
