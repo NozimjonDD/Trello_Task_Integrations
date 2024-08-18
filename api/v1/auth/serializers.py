@@ -120,3 +120,36 @@ class UserRegisterConfirmSerializer(serializers.ModelSerializer):
         user_otp.is_confirmed = True
         user_otp.save(update_fields=["is_confirmed"])
         return user
+
+
+# class UserResetPasswordSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = models.User
+#         fields = (
+#             "phone_number",
+#         )
+#
+#     phone_number = custom_fields.PhoneNumberField()
+
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(write_only=True)
+    new_password = custom_fields.PasswordField()
+
+    class Meta:
+        model = models.User
+        fields = (
+            "old_password",
+            "new_password",
+        )
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        old_password = attrs.get("old_password")
+
+        if not user.check_password(old_password):
+            raise serializers.ValidationError(
+                code="invalid_password",
+                detail={"old_password": [_("Incorrect password!")]},
+            )
+        return attrs
