@@ -83,7 +83,26 @@ JAZZMIN_SETTINGS = {
         "users.User",
         "users.GroupProxyModel",
         "users.UserOTP",
+
         "common",
+
+        "fantasy",
+        "fantasy.Team",
+        "fantasy.TeamPlayer",
+        "fantasy.FantasyLeague",
+        "fantasy.LeagueParticipant",
+        "fantasy.Formation",
+
+        "football",
+        "football.League",
+        "football.Season",
+        "football.Round",
+        "football.Fixture",
+        "football.FixtureState",
+        "football.Club",
+        "football.Position",
+        "football.Player",
+        "football.ClubPlayer",
     ],
 
     # Custom icons for side menu apps/models See https://fontawesome.com/icons?d=gallery&m=free&v=5.0.0,5.0.1,5.0.10,5.0.11,5.0.12,5.0.13,5.0.2,5.0.3,5.0.4,5.0.5,5.0.6,5.0.7,5.0.8,5.0.9,5.1.0,5.1.1,5.2.0,5.3.0,5.3.1,5.4.0,5.4.1,5.4.2,5.13.0,5.12.0,5.11.2,5.11.1,5.10.0,5.9.0,5.8.2,5.8.1,5.7.2,5.7.1,5.7.0,5.6.3,5.5.0,5.4.2
@@ -95,6 +114,27 @@ JAZZMIN_SETTINGS = {
         "users.UserOTP": "fas fa-key",
 
         "common": "fas fa-cogs",
+
+        "fantasy": "fas fa-star",
+        "fantasy.Team": "fas fa-users",
+        "fantasy.TeamPlayer": "fas fa-user",
+        "fantasy.FantasyLeague": "fas fa-trophy",
+        "fantasy.LeagueParticipant": "fas fa-users",
+        "fantasy.Formation": "fas fa-grip-horizontal",
+
+        "football": "fas fa-futbol",
+        "football.League": "fas fa-trophy",
+        "football.Season": "fas fa-calendar",
+        "football.Round": "fas fa-sync",
+        "football.Fixture": "fas fa-calendar-day",
+        "football.FixtureState": "fas fa-clipboard-check",
+        "football.Club": "fas fa-building",
+        "football.Position": "fas fa-user-tag",
+        "football.Player": "fas fa-user",
+        "football.ClubPlayer": "fas fa-user",
+
+        "auditlog": "fas fa-clipboard-list",
+        "auditlog.LogEntry": "fas fa-clipboard-list",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
