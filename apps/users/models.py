@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.db import models
 from apps.common.models import BaseModel
 from . import utils
+from apps.common import utils as common_utils
 from ..common.data import UserRoleChoices
 
 
@@ -19,7 +20,7 @@ class User(AbstractUser, BaseModel):
             "unique": _("A user with that phone number already exists."),
         },
         max_length=13,
-        validators=[utils.phone_number_validator]
+        validators=[common_utils.phone_number_validator]
     )
     username_validator = UnicodeUsernameValidator()
     username = models.CharField(
@@ -36,7 +37,7 @@ class User(AbstractUser, BaseModel):
         null=True,
         blank=True
     )
-    role = models.CharField(choices=UserRoleChoices.choices, default=UserRoleChoices.USER)
+    role = models.CharField(choices=UserRoleChoices.choices, default=UserRoleChoices.USER, max_length=50)
     first_name = models.CharField(_("first name"), max_length=150, blank=True)
     last_name = models.CharField(_("last name"), max_length=150, blank=True)
     middle_name = models.CharField(_("middle name"), max_length=150, blank=True)

@@ -27,9 +27,10 @@ class AccountSettingsInline(admin.StackedInline):
 class UserAdmin(DjangoUserAdmin):
     list_display = (
         "phone_number", "username", "profile_pic_html", "first_name",
-        "last_name", "middle_name", "is_active", "is_staff", "is_superuser", "date_joined", "id",
+        "last_name", "middle_name", "role", "is_active", "is_staff", "is_superuser", "date_joined", "id",
     )
     list_display_links = ("phone_number",)
+    list_filter = ("role", "is_active", "is_staff", "is_superuser", "date_joined")
     fieldsets = (
         (None, {"fields": ("phone_number", "username", "password")}),
         (
@@ -40,6 +41,7 @@ class UserAdmin(DjangoUserAdmin):
             _("Permissions"),
             {
                 "fields": (
+                    "role",
                     "is_active",
                     "is_staff",
                     "is_superuser",

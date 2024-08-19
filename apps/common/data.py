@@ -2,16 +2,16 @@ from django.db import models
 
 
 class LeagueStatusType(models.TextChoices):
-    PUBLIC = 'Public', 'public',
-    PRIVATE = 'Private', 'private',
+    PUBLIC = 'public', 'Public',
+    PRIVATE = 'private', 'Private',
 
 
 class TeamStatusChoices(models.TextChoices):
-    ACTIVE = 'Active', 'active',
-    INACTIVE = 'Inactive', 'inactive',
+    ACTIVE = 'active', 'Active',
+    INACTIVE = 'inactive', 'Inactive',
 
 
 class UserRoleChoices(models.TextChoices):
-    USER = 'User', 'user',
-    ADMIN = 'Admin', 'admin',
-    MODERATOR = 'Moderator', 'moderator',
+    USER = 'user', 'User',
+    ADMIN = 'admin', 'Admin',
+    MODERATOR = 'moderator', 'Moderator',

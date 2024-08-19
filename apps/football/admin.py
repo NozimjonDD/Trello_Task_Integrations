@@ -38,13 +38,13 @@ class RoundAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(models.MatchState)
-class MatchStateAdmin(admin.ModelAdmin):
+@admin.register(models.FixtureState)
+class FixtureStateAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(models.Match)
-class MatchAdmin(admin.ModelAdmin):
+@admin.register(models.Fixture)
+class FixtureAdmin(admin.ModelAdmin):
     pass
 
 

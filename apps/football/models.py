@@ -79,9 +79,9 @@ class Round(FootballBaseModel):
         return self.name
 
 
-class MatchState(FootballBaseModel):
+class FixtureState(FootballBaseModel):
     class Meta:
-        db_table = "match_state"
+        db_table = "fixture_state"
 
     state = models.CharField(max_length=100)
     title = models.CharField(max_length=200)
@@ -91,20 +91,20 @@ class MatchState(FootballBaseModel):
         return self.title
 
 
-class Match(FootballBaseModel):
+class Fixture(FootballBaseModel):
     class Meta:
-        db_table = "match"
+        db_table = "fixture"
 
     season = models.ForeignKey(
         to="Season",
         on_delete=models.CASCADE,
-        related_name="matches",
+        related_name="fixtures",
         verbose_name=_("Season"),
     )
     round = models.ForeignKey(
         to="Round",
         on_delete=models.CASCADE,
-        related_name="matches",
+        related_name="fixtures",
         verbose_name=_("Round")
     )
     venue_id = models.IntegerField()
@@ -117,7 +117,7 @@ class Match(FootballBaseModel):
         to="Club", on_delete=models.CASCADE, related_name="away_matches", verbose_name=_("Away club")
     )
     state = models.ForeignKey(
-        to="MatchState", on_delete=models.SET_NULL, related_name="+", verbose_name=_("State"), null=True, blank=True
+        to="FixtureState", on_delete=models.SET_NULL, related_name="+", verbose_name=_("State"), null=True, blank=True
     )
     home_club_score = models.IntegerField()
     away_club_score = models.IntegerField()
