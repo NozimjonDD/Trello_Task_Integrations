@@ -135,13 +135,14 @@ class Club(FootballBaseModel):
         db_table = "football_club"
 
     name = models.CharField(max_length=200, verbose_name=_("Name"))
-    short_name = models.CharField(max_length=50, verbose_name=_("Short name"))
+    short_name = models.CharField(max_length=50, verbose_name=_("Short name"), null=True, blank=True)
     country_id = models.IntegerField()
     venue_id = models.IntegerField()
     logo = models.ImageField(upload_to="football/club/logo/", null=True, blank=True)
     logo_path = models.URLField()
     kit = models.ImageField(upload_to="football/club/kit/", null=True, blank=True)
     founded_year = models.PositiveSmallIntegerField()
+    type = models.CharField(verbose_name=_("Club type"), max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -152,10 +153,11 @@ class Position(FootballBaseModel):
         db_table = "position"
 
     name = models.CharField(max_length=200)
-    short_name = models.CharField(max_length=20)
+    short_name = models.CharField(max_length=20, null=True)
+    code = models.CharField(max_length=50, null=True)
 
     def __str__(self):
-        return self.short_name
+        return self.name
 
 
 class Player(FootballBaseModel):
@@ -194,12 +196,13 @@ class ClubPlayer(FootballBaseModel):
 
     club = models.ForeignKey(to="Club", on_delete=models.CASCADE, related_name="club_players", verbose_name=_("Club"))
     player = models.ForeignKey(to="Player", on_delete=models.CASCADE, related_name="club_players")
+    position = models.ForeignKey(to="Position", on_delete=models.SET_NULL, related_name="+", null=True)
 
     transfer_id = models.IntegerField(null=True)
-    start_date = models.DateField(verbose_name=_("Start date"))
-    end_date = models.DateField(verbose_name=_("End date"))
+    start_date = models.DateField(verbose_name=_("Start date"), null=True)
+    end_date = models.DateField(verbose_name=_("End date"), null=True)
     is_captain = models.BooleanField(default=False)
-    kit_number = models.IntegerField()
+    kit_number = models.IntegerField(null=True, blank=True)
     is_current_club = models.BooleanField(default=False)
 
     def __str__(self):

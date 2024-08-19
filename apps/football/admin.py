@@ -12,10 +12,32 @@ def update_leagues_action(model_admin, request, queryset):
     model_admin.message_user(request, _("Leagues updated!"))
 
 
-@admin.action(description=_("Update seasons"))
-def update_seasons_action(model_admin, request, queryset):
-    utils.update_seasons()
+@admin.action(description=_("Update seasons by league"))
+def update_seasons_by_league_action(model_admin, request, queryset):
+    for league in queryset:
+        utils.update_seasons_by_league(league.remote_id)
     model_admin.message_user(request, _("Seasons updated!"))
+
+
+@admin.action(description=_("Update rounds by season"))
+def update_rounds_by_season_action(model_admin, request, queryset):
+    for season in queryset:
+        utils.update_rounds_by_season(season.remote_id)
+    model_admin.message_user(request, _("Rounds updated!"))
+
+
+@admin.action(description=_("Update clubs by season"))
+def update_clubs_by_season_action(model_admin, request, queryset):
+    for season in queryset:
+        utils.update_clubs_by_season(season.remote_id)
+    model_admin.message_user(request, _("Clubs updated!"))
+
+
+@admin.action(description=_("Update club details (info, players)"))
+def update_club_action(model_admin, request, queryset):
+    for club in queryset:
+        utils.update_club_details(club.remote_id)
+    model_admin.message_user(request, _("Club details updated!"))
 
 
 @admin.action(description=_("Update players"))
@@ -24,9 +46,15 @@ def update_players_action(model_admin, request, queryset):
     model_admin.message_user(request, _("Players updated!"))
 
 
+@admin.action(description=_("Update positions"))
+def update_positions_action(model_admin, request, queryset):
+    utils.update_positions()
+    model_admin.message_user(request, _("Positions updated!"))
+
+
 @admin.register(models.League)
 class LeagueAdmin(admin.ModelAdmin):
-    actions = (update_leagues_action,)
+    actions = (update_leagues_action, update_seasons_by_league_action,)
 
     list_display = ("name", "short_code", "type", "sub_type", "is_active", "id",)
     list_display_links = ("name",)
@@ -36,12 +64,13 @@ class LeagueAdmin(admin.ModelAdmin):
 
 @admin.register(models.Season)
 class SeasonAdmin(admin.ModelAdmin):
-    actions = (update_seasons_action,)
+    actions = (update_rounds_by_season_action, update_clubs_by_season_action,)
     list_display = ("name", "league", "is_finished", "pending", "is_current", "starting_at", "ending_at", "id",)
     list_display_links = ("name",)
     list_filter = ("league", "is_finished", "pending", "is_current",)
     search_fields = ("name", "league__name", "remote_id",)
     autocomplete_fields = ("league",)
+    ordering = ("-starting_at",)
 
 
 @admin.register(models.Round)
@@ -50,9 +79,10 @@ class RoundAdmin(admin.ModelAdmin):
         "name", "league", "season", "is_finished", "is_current", "starting_at", "ending_at", "id",
     )
     list_display_links = ("name",)
-    list_filter = ("league", "is_finished", "is_current",)
+    list_filter = ("league", "season", "is_finished", "is_current",)
     search_fields = ("name", "league__name", "season__name", "remote_id",)
     autocomplete_fields = ("league", "season",)
+    ordering = ("starting_at",)
 
 
 @admin.register(models.FixtureState)
@@ -67,12 +97,26 @@ class FixtureAdmin(admin.ModelAdmin):
 
 @admin.register(models.Club)
 class ClubAdmin(admin.ModelAdmin):
-    search_fields = ("name",)
+    list_display = ("name", "short_name", "logo_html", "founded_year", "type", "id",)
+    list_display_links = ("name", "id",)
+    search_fields = ("name", "short_name", "type", "remote_id", "founder_year",)
+
+    actions = (update_club_action,)
+
+    def logo_html(self, obj):
+        if obj.logo_path:
+            return format_html('<img src="{}" width="50" height="50" />'.format(obj.logo_path))
+        return None
+
+    logo_html.short_description = _("Logo")
 
 
 @admin.register(models.Position)
 class PositionAdmin(admin.ModelAdmin):
-    search_fields = ("name",)
+    list_display = ("name", "short_name", "code", "id",)
+    list_display_links = ("name", "id",)
+    search_fields = ("name", "short_name", "code", "id", "remote_id",)
+    actions = (update_positions_action,)
 
 
 @admin.register(models.Player)

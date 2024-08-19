@@ -3,6 +3,40 @@ from django.db import transaction
 from . import service, models
 
 
+def update_positions():
+    page = 1
+    has_more = True
+
+    while has_more:
+        success, resp_data = service.SportMonksAPIClient().fetch_types(page=page, per_page=50)
+
+        if not success:
+            break
+
+        try:
+            types_data = resp_data["data"]
+        except KeyError:
+            break
+
+        with transaction.atomic():
+
+            for type_ in types_data:
+
+                if not type_["model_type"] == "position":
+                    continue
+
+                models.Position.objects.update_or_create(
+                    remote_id=type_["id"],
+                    defaults={
+                        "name": type_["name"],
+                        "code": type_["code"],
+                    }
+                )
+
+        has_more = resp_data["pagination"]["has_more"]
+        page += 1
+
+
 def update_leagues():
     page = 1
     has_more = True
@@ -13,7 +47,10 @@ def update_leagues():
         if not success:
             break
 
-        leagues_data = resp_data["data"]
+        try:
+            leagues_data = resp_data["data"]
+        except KeyError:
+            break
 
         with transaction.atomic():
 
@@ -36,17 +73,24 @@ def update_leagues():
         page += 1
 
 
-def update_seasons():
+def update_seasons_by_league(league_id):
     page = 1
     has_more = True
 
     while has_more:
-        success, resp_data = service.SportMonksAPIClient().fetch_seasons(page=page, per_page=50)
+        success, resp_data = service.SportMonksAPIClient().fetch_seasons_by_league(
+            league_id=league_id,
+            page=page,
+            per_page=50
+        )
 
         if not success:
             break
 
-        seasons_data = resp_data["data"]
+        try:
+            seasons_data = resp_data["data"]
+        except KeyError:
+            break
 
         with transaction.atomic():
 
@@ -69,6 +113,142 @@ def update_seasons():
         page += 1
 
 
+def update_rounds_by_season(season_id):
+    success, resp_data = service.SportMonksAPIClient().fetch_rounds_by_season(
+        season_id=season_id
+    )
+
+    if not success:
+        return
+
+    try:
+        rounds_data = resp_data["data"]
+    except KeyError:
+        return
+
+    with transaction.atomic():
+
+        for rnd in rounds_data:
+            models.Round.objects.update_or_create(
+                remote_id=rnd["id"],
+                defaults={
+                    "league": models.League.objects.get(remote_id=rnd["league_id"]),
+                    "season": models.Season.objects.get(remote_id=rnd["season_id"]),
+                    "name": rnd["name"],
+                    "is_finished": rnd["finished"],
+                    "is_current": rnd["is_current"],
+                    "starting_at": rnd["starting_at"],
+                    "ending_at": rnd["ending_at"],
+                    "games_in_current_week": rnd["games_in_current_week"],
+                }
+            )
+
+
+def update_clubs_by_season(season_id):
+    success, resp_data = service.SportMonksAPIClient().fetch_clubs_by_season(
+        season_id=season_id
+    )
+
+    if not success:
+        return
+
+    try:
+        clubs_data = resp_data["data"]
+    except KeyError:
+        return
+
+    with transaction.atomic():
+
+        for club in clubs_data:
+            players_data = club["players"]
+
+            club, _ = models.Club.objects.update_or_create(
+                remote_id=club["id"],
+                defaults={
+                    "name": club["name"],
+                    "short_name": club["short_code"],
+                    "logo_path": club["image_path"],
+                    "founded_year": club["founded"],
+                    "country_id": club["country_id"],
+                    "venue_id": club["venue_id"],
+                    "type": club["type"],
+                })
+
+            for player in players_data:
+                plyer = models.Player.objects.get(remote_id=player["player_id"])
+                models.ClubPlayer.objects.update_or_create(
+                    remote_id=player["id"],
+                    defaults={
+                        "club": club,
+                        "player": plyer,
+                        "position": models.Position.objects.get(remote_id=player["position_id"]) if player[
+                            "position_id"] else None,
+
+                        "transfer_id": player["transfer_id"],
+                        "start_date": player["start"],
+                        "end_date": player["end"],
+                        "is_captain": player["captain"],
+                        "kit_number": player["jersey_number"],
+                        "is_current_club": True,
+                    }
+                )
+
+                plyer.club = club
+                plyer.club_contract_until = player["end"]
+                plyer.save(update_fields=["club", "club_contract_until"])
+
+
+def update_club_details(club_id):
+    success, resp_data = service.SportMonksAPIClient().fetch_club_by_id(
+        club_id=club_id
+    )
+
+    if not success:
+        return
+
+    try:
+        club_data = resp_data["data"]
+    except KeyError:
+        return
+
+    with transaction.atomic():
+
+        club = models.Club.objects.update_or_create(
+            remote_id=club_data["id"],
+            defaults={
+                "name": club_data["name"],
+                "short_name": club_data["short_code"],
+                "logo_path": club_data["image_path"],
+                "founded_year": club_data["founded"],
+                "country_id": club_data["country_id"],
+                "venue_id": club_data["venue_id"],
+                "type": club_data["type"],
+            })[0]
+
+        for player in club_data["players"]:
+            plyer = models.Player.objects.get(remote_id=player["player_id"])
+            models.ClubPlayer.objects.update_or_create(
+                remote_id=player["id"],
+                defaults={
+                    "club": club,
+                    "player": plyer,
+                    "position": models.Position.objects.get(remote_id=player["position_id"]) if player[
+                        "position_id"] else None,
+
+                    "transfer_id": player["transfer_id"],
+                    "start_date": player["start"],
+                    "end_date": player["end"],
+                    "is_captain": player["captain"],
+                    "kit_number": player["jersey_number"],
+                    "is_current_club": True,
+                }
+            )
+
+            plyer.club = club
+            plyer.club_contract_until = player["end"]
+            plyer.save(update_fields=["club", "club_contract_until"])
+
+
 def update_players():
     page = 1
     has_more = True
@@ -87,6 +267,8 @@ def update_players():
                 models.Player.objects.update_or_create(
                     remote_id=player["id"],
                     defaults={
+                        "position": models.Position.objects.get(remote_id=player["position_id"]) if player[
+                            "position_id"] else None,
                         "country_id": player["country_id"],
                         "nationality_id": player["nationality_id"],
                         "profile_picture_path": player["image_path"],

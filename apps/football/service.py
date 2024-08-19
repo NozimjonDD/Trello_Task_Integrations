@@ -27,15 +27,37 @@ class SportMonksAPIClient:
             return False, {"error": e}
         return True, data
 
+    def fetch_types(self, page=1, per_page=50):
+        endpoint = f"/core/types?page={page}&per_page={per_page}"
+        return self.fetch_base(endpoint)
+
     def fetch_leagues(self, page=1, per_page=50):
         endpoint = f"/{SPORT}/leagues?page={page}&per_page={per_page}"
         return self.fetch_base(endpoint)
 
-    def fetch_seasons(self, page=1, per_page=50):
-        endpoint = f"/{SPORT}/seasons?page={page}&per_page={per_page}"
+    def fetch_seasons_by_league(self, league_id, page=1, per_page=50):
+        endpoint = f"/{SPORT}/seasons?page={page}&per_page={per_page}&filter=seasonLeagues:{league_id}"
+        return self.fetch_base(endpoint)
+
+    def fetch_rounds_by_season(self, season_id):
+        endpoint = f"/{SPORT}/rounds/seasons/{season_id}"
+        return self.fetch_base(endpoint)
+
+    def fetch_clubs_by_season(self, season_id):
+        endpoint = f"/{SPORT}/teams/seasons/{season_id}"
+        endpoint += f"?include=players"
+        return self.fetch_base(endpoint)
+
+    def fetch_club_by_id(self, club_id):
+        endpoint = f"/{SPORT}/teams/{club_id}"
+        endpoint += f"?include=sport;country;venue;upcoming;latest;players.position"
         return self.fetch_base(endpoint)
 
     def fetch_players(self, page=1, per_page=50):
         endpoint = f"/{SPORT}/players?page={page}&per_page={per_page}"
         endpoint += "&include=sport;country;nationality;city;position;metadata;transfers;teams"
+        return self.fetch_base(endpoint)
+
+    def fetch_fixture_states(self, page=1, per_page=50):
+        endpoint = f"/{SPORT}/states?page={page}&per_page={per_page}"
         return self.fetch_base(endpoint)
