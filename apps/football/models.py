@@ -107,7 +107,7 @@ class Fixture(FootballBaseModel):
         related_name="fixtures",
         verbose_name=_("Round")
     )
-    venue_id = models.IntegerField()
+    venue_id = models.IntegerField(null=True, blank=True)
 
     title = models.CharField(max_length=100)
     home_club = models.ForeignKey(
@@ -119,8 +119,8 @@ class Fixture(FootballBaseModel):
     state = models.ForeignKey(
         to="FixtureState", on_delete=models.SET_NULL, related_name="+", verbose_name=_("State"), null=True, blank=True
     )
-    home_club_score = models.IntegerField()
-    away_club_score = models.IntegerField()
+    home_club_score = models.IntegerField(null=True, blank=True)
+    away_club_score = models.IntegerField(null=True, blank=True)
 
     result_info = models.CharField(verbose_name=_("Result info"), null=True, blank=True)
     match_date = models.DateTimeField()

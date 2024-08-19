@@ -175,6 +175,56 @@ def update_rounds_by_season(season_id):
             )
 
 
+def update_fixtures_by_season(season_id):
+    page = 1
+    has_more = True
+
+    while has_more:
+        success, resp_data = service.SportMonksAPIClient().fetch_fixtures_by_season(
+            season_id=season_id,
+            page=page,
+            per_page=50
+        )
+
+        if not success:
+            break
+
+        try:
+            fixtures_data = resp_data["data"]
+        except KeyError:
+            break
+
+        with transaction.atomic():
+
+            for fixture in fixtures_data:
+                home_club = None
+                away_club = None
+
+                for p in fixture["participants"]:
+                    if p["meta"]["location"] == "home":
+                        home_club = models.Club.objects.get(remote_id=p["id"])
+                    elif p["meta"]["location"] == "away":
+                        away_club = models.Club.objects.get(remote_id=p["id"])
+
+                models.Fixture.objects.update_or_create(
+                    remote_id=fixture["id"],
+                    defaults={
+                        "season": models.Season.objects.get(remote_id=fixture["season_id"]),
+                        "round": models.Round.objects.get(remote_id=fixture["round_id"]),
+                        "home_club": home_club,
+                        "away_club": away_club,
+                        "title": fixture["name"],
+                        "venue_id": fixture["venue_id"],
+                        "state": models.FixtureState.objects.get(remote_id=fixture["state_id"]),
+                        "result_info": fixture["result_info"],
+                        "match_date": fixture["starting_at"],
+                        "length": fixture["length"],
+                    }
+                )
+        has_more = resp_data["pagination"]["has_more"]
+        page += 1
+
+
 def update_clubs_by_season(season_id):
     success, resp_data = service.SportMonksAPIClient().fetch_clubs_by_season(
         season_id=season_id

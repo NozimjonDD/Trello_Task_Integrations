@@ -3,64 +3,12 @@ from django.utils.html import format_html
 
 from django.utils.translation import gettext_lazy as _
 
-from . import models, utils
-
-
-@admin.action(description=_("Update leagues"))
-def update_leagues_action(model_admin, request, queryset):
-    utils.update_leagues()
-    model_admin.message_user(request, _("Leagues updated!"))
-
-
-@admin.action(description=_("Update seasons by league"))
-def update_seasons_by_league_action(model_admin, request, queryset):
-    for league in queryset:
-        utils.update_seasons_by_league(league.remote_id)
-    model_admin.message_user(request, _("Seasons updated!"))
-
-
-@admin.action(description=_("Update rounds by season"))
-def update_rounds_by_season_action(model_admin, request, queryset):
-    for season in queryset:
-        utils.update_rounds_by_season(season.remote_id)
-    model_admin.message_user(request, _("Rounds updated!"))
-
-
-@admin.action(description=_("Update clubs by season"))
-def update_clubs_by_season_action(model_admin, request, queryset):
-    for season in queryset:
-        utils.update_clubs_by_season(season.remote_id)
-    model_admin.message_user(request, _("Clubs updated!"))
-
-
-@admin.action(description=_("Update club details (info, players)"))
-def update_club_action(model_admin, request, queryset):
-    for club in queryset:
-        utils.update_club_details(club.remote_id)
-    model_admin.message_user(request, _("Club details updated!"))
-
-
-@admin.action(description=_("Update players"))
-def update_players_action(model_admin, request, queryset):
-    utils.update_players()
-    model_admin.message_user(request, _("Players updated!"))
-
-
-@admin.action(description=_("Update positions"))
-def update_positions_action(model_admin, request, queryset):
-    utils.update_positions()
-    model_admin.message_user(request, _("Positions updated!"))
-
-
-@admin.action(description=_("Update fixture states"))
-def update_fixture_states_action(model_admin, request, queryset):
-    utils.update_fixture_states()
-    model_admin.message_user(request, _("Fixture states updated!"))
+from . import models, actions
 
 
 @admin.register(models.League)
 class LeagueAdmin(admin.ModelAdmin):
-    actions = (update_leagues_action, update_seasons_by_league_action,)
+    actions = (actions.update_leagues_action, actions.update_seasons_by_league_action,)
 
     list_display = ("name", "short_code", "type", "sub_type", "is_active", "id",)
     list_display_links = ("name",)
@@ -70,7 +18,11 @@ class LeagueAdmin(admin.ModelAdmin):
 
 @admin.register(models.Season)
 class SeasonAdmin(admin.ModelAdmin):
-    actions = (update_rounds_by_season_action, update_clubs_by_season_action,)
+    actions = (
+        actions.update_rounds_by_season_action,
+        actions.update_clubs_by_season_action,
+        actions.update_fixtures_by_season_action,
+    )
     list_display = ("name", "league", "is_finished", "pending", "is_current", "starting_at", "ending_at", "id",)
     list_display_links = ("name",)
     list_filter = ("league", "is_finished", "pending", "is_current",)
@@ -96,12 +48,15 @@ class FixtureStateAdmin(admin.ModelAdmin):
     list_display = ("state", "title", "short_title", "id",)
     list_display_links = ("state", "id",)
     search_fields = ("state", "title", "short_title", "id", "remote_id",)
-    actions = (update_fixture_states_action,)
+    actions = (actions.update_fixture_states_action,)
 
 
 @admin.register(models.Fixture)
 class FixtureAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("title", "season", "round", "state", "result_info", "match_date", "id",)
+    list_display_links = ("title", "id",)
+    search_fields = ("title", "season__name", "round__name", "state__title", "remote_id", "id",)
+    autocomplete_fields = ("season", "round", "state", "home_club", "away_club",)
 
 
 @admin.register(models.Club)
@@ -110,7 +65,7 @@ class ClubAdmin(admin.ModelAdmin):
     list_display_links = ("name", "id",)
     search_fields = ("name", "short_name", "type", "remote_id", "founder_year",)
 
-    actions = (update_club_action,)
+    actions = (actions.update_club_action,)
 
     def logo_html(self, obj):
         if obj.logo_path:
@@ -125,12 +80,12 @@ class PositionAdmin(admin.ModelAdmin):
     list_display = ("name", "short_name", "code", "id",)
     list_display_links = ("name", "id",)
     search_fields = ("name", "short_name", "code", "id", "remote_id",)
-    actions = (update_positions_action,)
+    actions = (actions.update_positions_action,)
 
 
 @admin.register(models.Player)
 class PlayerAdmin(admin.ModelAdmin):
-    actions = (update_players_action,)
+    actions = (actions.update_players_action,)
 
     list_display = (
         "first_name",
