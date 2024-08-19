@@ -37,6 +37,37 @@ def update_positions():
         page += 1
 
 
+def update_fixture_states():
+    page = 1
+    has_more = True
+
+    while has_more:
+        success, resp_data = service.SportMonksAPIClient().fetch_fixture_states(page=page, per_page=50)
+
+        if not success:
+            break
+
+        try:
+            states_data = resp_data["data"]
+        except KeyError:
+            break
+
+        with transaction.atomic():
+
+            for state in states_data:
+                models.FixtureState.objects.update_or_create(
+                    remote_id=state["id"],
+                    defaults={
+                        "state": state["state"],
+                        "title": state["name"],
+                        "short_title": state["short_name"],
+                    }
+                )
+
+        has_more = resp_data["pagination"]["has_more"]
+        page += 1
+
+
 def update_leagues():
     page = 1
     has_more = True

@@ -52,6 +52,12 @@ def update_positions_action(model_admin, request, queryset):
     model_admin.message_user(request, _("Positions updated!"))
 
 
+@admin.action(description=_("Update fixture states"))
+def update_fixture_states_action(model_admin, request, queryset):
+    utils.update_fixture_states()
+    model_admin.message_user(request, _("Fixture states updated!"))
+
+
 @admin.register(models.League)
 class LeagueAdmin(admin.ModelAdmin):
     actions = (update_leagues_action, update_seasons_by_league_action,)
@@ -87,7 +93,10 @@ class RoundAdmin(admin.ModelAdmin):
 
 @admin.register(models.FixtureState)
 class FixtureStateAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("state", "title", "short_title", "id",)
+    list_display_links = ("state", "id",)
+    search_fields = ("state", "title", "short_title", "id", "remote_id",)
+    actions = (update_fixture_states_action,)
 
 
 @admin.register(models.Fixture)
