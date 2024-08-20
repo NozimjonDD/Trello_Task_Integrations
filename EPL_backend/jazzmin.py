@@ -6,13 +6,13 @@ JAZZMIN_SETTINGS = {
     "site_header": "EPL",
 
     # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
-    "site_brand": "EPL",
+    "site_brand": "EPL Fantasy",
 
     # Logo to use for your site, must be present in static files, used for brand on top left
-    "site_logo": "images/my_master_logo.png",
+    "site_logo": "images/logo.png",
 
     # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
-    "login_logo": "images/my_master_logo.png",
+    "login_logo": "images/logo.png",
 
     # Logo to use for login form in dark themes (defaults to login_logo)
     "login_logo_dark": None,
@@ -21,7 +21,7 @@ JAZZMIN_SETTINGS = {
     "site_logo_classes": "",
 
     # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
-    "site_icon": None,
+    "site_icon": "images/logo.png",
 
     # Welcome text on the login screen
     "welcome_sign": "Welcome to the EPL Admin",
@@ -34,7 +34,7 @@ JAZZMIN_SETTINGS = {
     # "search_model": ["auth.User", "auth.Group"],
 
     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
-    "user_avatar": None,
+    "user_avatar": "profile_picture",
 
     ############
     # Top Menu #
