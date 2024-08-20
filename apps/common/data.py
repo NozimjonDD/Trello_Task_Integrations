@@ -9,6 +9,7 @@ class LeagueStatusType(models.TextChoices):
 class TeamStatusChoices(models.TextChoices):
     ACTIVE = 'active', 'Active',
     INACTIVE = 'inactive', 'Inactive',
+    DRAFT = "draft", "Draft"
 
 
 class UserRoleChoices(models.TextChoices):

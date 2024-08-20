@@ -52,7 +52,7 @@ class Team(BaseModel):
 
     user = models.OneToOneField(to="users.User", on_delete=models.CASCADE, related_name="team")
     name = models.CharField(verbose_name=_("Name"), max_length=255, null=True)
-    status = models.CharField(choices=TeamStatusChoices.choices, default=TeamStatusChoices.INACTIVE, max_length=100)
+    status = models.CharField(choices=TeamStatusChoices.choices, default=TeamStatusChoices.DRAFT, max_length=100)
     formation = models.ForeignKey(to="fantasy.Formation", on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):

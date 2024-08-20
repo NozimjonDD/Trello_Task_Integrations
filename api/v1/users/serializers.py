@@ -19,6 +19,7 @@ class _TeamSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "status",
         )
 
 
