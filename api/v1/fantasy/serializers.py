@@ -4,16 +4,18 @@ from apps.fantasy import models
 
 
 class _FormationPositionSerializer(serializers.ModelSerializer):
-    # position__name = serializers.StringRelatedField(source="position.name")
-    # position__short_name = serializers.StringRelatedField(source="position.short_name")
+    position__id = serializers.IntegerField(source="position.pk")
+    position__name = serializers.StringRelatedField(source="position.name")
+    position__short_name = serializers.StringRelatedField(source="position.short_name")
 
     class Meta:
         model = models.FormationPosition
         fields = (
             "id",
             "index",
-            # "position__name",
-            # "position__short_name",
+            "position__id",
+            "position__name",
+            "position__short_name",
         )
 
 

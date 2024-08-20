@@ -175,7 +175,7 @@ class Player(FootballBaseModel):
     club = models.ForeignKey(
         to="Club", on_delete=models.CASCADE, related_name="players", verbose_name=_("Club"), null=True
     )
-    position = models.ForeignKey(to="Position", on_delete=models.SET_NULL, related_name="+", null=True)
+    position = models.ForeignKey(to="Position", on_delete=models.SET_NULL, related_name="players", null=True)
     country_id = models.IntegerField(null=True)
     nationality_id = models.IntegerField(null=True)
     profile_picture = models.ImageField(upload_to="football/player/profile_picture/", null=True, blank=True)
