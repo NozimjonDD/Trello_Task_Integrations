@@ -66,6 +66,14 @@ class TeamPlayer(BaseModel):
     team = models.ForeignKey(to="fantasy.Team", on_delete=models.CASCADE, related_name="team_players")
     player = models.ForeignKey(to="football.Player", on_delete=models.CASCADE, related_name="+")
     position = models.ForeignKey(to="football.Position", on_delete=models.SET_NULL, null=True)
+    formation_position = models.ForeignKey(
+        to="fantasy.FormationPosition",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name=_("Formation position"),
+        null=True,
+        blank=True,
+    )
     is_captain = models.BooleanField(default=False)
     is_substitution = models.BooleanField(default=False)
 

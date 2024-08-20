@@ -61,9 +61,11 @@ class FixtureAdmin(admin.ModelAdmin):
 
 @admin.register(models.Club)
 class ClubAdmin(admin.ModelAdmin):
-    list_display = ("name", "short_name", "logo_html", "founded_year", "type", "id",)
+    list_display = ("name", "short_name", "logo_html", "league", "founded_year", "type", "id",)
     list_display_links = ("name", "id",)
     search_fields = ("name", "short_name", "type", "remote_id", "founder_year",)
+    list_filter = ("league",)
+    autocomplete_fields = ("league",)
 
     actions = (actions.update_club_action,)
 

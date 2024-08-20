@@ -135,6 +135,14 @@ class Club(FootballBaseModel):
         db_table = "football_club"
 
     name = models.CharField(max_length=200, verbose_name=_("Name"))
+    league = models.ForeignKey(
+        to="football.League",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name=_("League"),
+        null=True,
+        blank=True,
+    )
     short_name = models.CharField(max_length=50, verbose_name=_("Short name"), null=True, blank=True)
     country_id = models.IntegerField()
     venue_id = models.IntegerField()
