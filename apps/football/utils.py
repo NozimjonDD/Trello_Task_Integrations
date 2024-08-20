@@ -247,6 +247,7 @@ def update_clubs_by_season(season_id):
                 remote_id=club["id"],
                 defaults={
                     "name": club["name"],
+                    "league": models.Season.objects.get(remote_id=season_id).league,
                     "short_name": club["short_code"],
                     "logo_path": club["image_path"],
                     "founded_year": club["founded"],
