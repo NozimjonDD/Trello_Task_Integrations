@@ -50,6 +50,8 @@ class User(AbstractUser, BaseModel):
         blank=True,
     )
 
+    balance = models.DecimalField(verbose_name=_("Balance"), max_digits=18, decimal_places=2, default=1000000)
+
     EMAIL_FIELD = None
     USERNAME_FIELD = "phone_number"
     REQUIRED_FIELDS = ["username"]
@@ -75,6 +77,18 @@ class User(AbstractUser, BaseModel):
 
         otp = UserOTP.objects.create(user=self, code=utils.generate_otp())
         return otp
+
+    @property
+    def p_team(self):
+        if hasattr(self, "team"):
+            return self.team
+        return None
+
+    @property
+    def account_settings(self):
+        if hasattr(self, "_account_settings"):
+            return self._account_settings
+        return AccountSettings.objects.create(user_id=self.pk)
 
 
 class AccountSettings(BaseModel):
