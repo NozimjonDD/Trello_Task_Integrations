@@ -197,6 +197,17 @@ class Player(FootballBaseModel):
     def __str__(self):
         return self.full_name
 
+    @property
+    def age(self):
+        from datetime import date
+
+        if not self.date_of_birth:
+            return None
+        today = date.today()
+        age = today.year - self.date_of_birth.year - (
+                (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
+        return age
+
 
 class ClubPlayer(FootballBaseModel):
     class Meta:

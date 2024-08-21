@@ -15,3 +15,13 @@ class PlayerListAPIView(generics.ListAPIView):
         "club": ["exact", "in"],
         "position__remote_id": ["exact", "in"]
     }
+
+    def get_queryset(self):
+        qs = self.queryset.select_related("club", "position")
+        return qs
+
+
+class PlayerDetailAPIView(generics.RetrieveAPIView):
+    queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
+    serializer_class = serializers.PlayerDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
