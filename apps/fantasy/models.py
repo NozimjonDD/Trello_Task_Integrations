@@ -57,10 +57,9 @@ class Team(BaseModel):
     user = models.OneToOneField(to="users.User", on_delete=models.CASCADE, related_name="team")
     name = models.CharField(verbose_name=_("Name"), max_length=255, null=True)
     status = models.CharField(choices=TeamStatusChoices.choices, default=TeamStatusChoices.DRAFT, max_length=100)
-    formation = models.ForeignKey(to="fantasy.Formation", on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class TeamPlayer(BaseModel):
@@ -130,6 +129,8 @@ class SquadPlayer(BaseModel):
         related_name="+",
         verbose_name=_("Formation position"),
     )
+    is_captain = models.BooleanField(default=False)
+    is_substitution = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.player} - {self.position}"

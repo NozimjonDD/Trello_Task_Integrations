@@ -15,3 +15,9 @@ class FormationListAPIView(generics.ListAPIView):
     def get_queryset(self):
         qs = self.queryset.prefetch_related("positions")
         return qs.order_by("ordering")
+
+
+class TeamCreateAPIView(generics.CreateAPIView):
+    model = models.Team
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = serializers.TeamCreateSerializer
