@@ -9,6 +9,8 @@ from apps.common import utils as common_utils
 class Formation(BaseModel):
     class Meta:
         db_table = "formation"
+        verbose_name = _("Squad formation")
+        verbose_name_plural = _("Squad formations")
 
     title = models.CharField(max_length=255, null=True)
     scheme = models.CharField(
@@ -23,8 +25,8 @@ class Formation(BaseModel):
 class FormationPosition(BaseModel):
     class Meta:
         db_table = "formation_position"
-        verbose_name = _("Formation position")
-        verbose_name_plural = _("Formation positions")
+        verbose_name = _("Squad formation position")
+        verbose_name_plural = _("Squad formation positions")
 
     formation = models.ForeignKey(
         to="fantasy.Formation",
@@ -49,6 +51,8 @@ class FormationPosition(BaseModel):
 class Team(BaseModel):
     class Meta:
         db_table = "fantasy_team"
+        verbose_name = _("Team")
+        verbose_name_plural = _("Teams")
 
     user = models.OneToOneField(to="users.User", on_delete=models.CASCADE, related_name="team")
     name = models.CharField(verbose_name=_("Name"), max_length=255, null=True)
@@ -62,6 +66,8 @@ class Team(BaseModel):
 class TeamPlayer(BaseModel):
     class Meta:
         db_table = "fantasy_team_player"
+        verbose_name = _("Team player")
+        verbose_name_plural = _("Team players")
 
     team = models.ForeignKey(to="fantasy.Team", on_delete=models.CASCADE, related_name="team_players")
     player = models.ForeignKey(to="football.Player", on_delete=models.CASCADE, related_name="+")
@@ -84,14 +90,17 @@ class TeamPlayer(BaseModel):
 class Squad(BaseModel):
     class Meta:
         db_table = "fantasy_squad"
+        verbose_name = _("Squad")
+        verbose_name_plural = _("Squads")
 
     team = models.ForeignKey(to="fantasy.Team", on_delete=models.CASCADE, related_name="squads", verbose_name=_("Team"))
     round = models.ForeignKey(
-        to="football.Round", on_delete=models.CASCADE, related_name="+", verbose_name=_("Round")
+        to="football.Round", on_delete=models.CASCADE, related_name="+", verbose_name=_("Round"), null=True, blank=True
     )
     formation = models.ForeignKey(
         to="fantasy.Formation", on_delete=models.SET_NULL, null=True, verbose_name=_("Formation"), related_name="+"
     )
+    is_default = models.BooleanField(verbose_name=_("Is default squad"), default=False)
 
     def __str__(self):
         return f"{self.team} - {self.round}"
@@ -100,6 +109,8 @@ class Squad(BaseModel):
 class SquadPlayer(BaseModel):
     class Meta:
         db_table = "fantasy_squad_player"
+        verbose_name = _("Squad player")
+        verbose_name_plural = _("Squad players")
 
     squad = models.ForeignKey(
         to="fantasy.Squad",
@@ -127,6 +138,8 @@ class SquadPlayer(BaseModel):
 class FantasyLeague(BaseModel):
     class Meta:
         db_table = "fantasy_league"
+        verbose_name = _("Fantasy league")
+        verbose_name_plural = _("Fantasy leagues")
 
     owner = models.ForeignKey(
         to="users.User", verbose_name=_("Owner"), on_delete=models.CASCADE, related_name="fantasy_leagues"
@@ -145,6 +158,8 @@ class FantasyLeague(BaseModel):
 class LeagueParticipant(BaseModel):
     class Meta:
         db_table = "fantasy_league_participant"
+        verbose_name = _("Fantasy league participant")
+        verbose_name_plural = _("Fantasy league participant")
 
     league = models.ForeignKey(
         to="fantasy.FantasyLeague",
