@@ -25,12 +25,12 @@ class FormationAdmin(admin.ModelAdmin):
 
 @admin.register(models.Team)
 class TeamAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ("name",)
 
 
 @admin.register(models.TeamPlayer)
 class TeamPlayerAdmin(admin.ModelAdmin):
-    pass
+    autocomplete_fields = ("team", "player", "position",)
 
 
 @admin.register(models.Squad)

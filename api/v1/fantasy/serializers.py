@@ -4,6 +4,8 @@ from rest_framework import serializers
 
 from apps.fantasy import models
 
+from api.v1 import common_serializers
+
 
 class _FormationPositionSerializer(serializers.ModelSerializer):
     position__id = serializers.IntegerField(source="position.pk")
@@ -66,3 +68,63 @@ class TeamCreateSerializer(serializers.ModelSerializer):
             is_default=True,
         )
         return instance
+
+
+class _TeamPlayerSerializer(serializers.ModelSerializer):
+    player = common_serializers.CommonPlayerSerializer()
+    team_position = common_serializers.CommonPositionSerializer(source="position")
+
+    class Meta:
+        model = models.TeamPlayer
+        fields = (
+            "id",
+            "player",
+            "team_position",
+        )
+
+
+class _DefaultSquadPlayerSerializer(serializers.ModelSerializer):
+    team_player = _TeamPlayerSerializer(source="player")
+    team_position = common_serializers.CommonFormationPositionSerializer(source="position")
+
+    class Meta:
+        model = models.SquadPlayer
+        fields = (
+            "id",
+            "team_position",
+            "team_player",
+            "is_captain",
+            "is_substitution",
+        )
+
+
+class _DefaultSquadSerializer(serializers.ModelSerializer):
+    formation = common_serializers.CommonFormationSerializer()
+    squad_players = _DefaultSquadPlayerSerializer(many=True, source="players")
+
+    class Meta:
+        model = models.Squad
+        fields = (
+            "id",
+            "formation",
+            "squad_players",
+        )
+
+
+class TeamDetailSerializer(serializers.ModelSerializer):
+    default_squad = _DefaultSquadSerializer(read_only=True)
+    team_players = _TeamPlayerSerializer(many=True)
+
+    class Meta:
+        model = models.Team
+        fields = (
+            "id",
+            "name",
+            "status",
+
+            "default_squad",
+            "team_players",
+
+            "created_at",
+            "updated_at",
+        )

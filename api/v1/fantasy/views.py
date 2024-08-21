@@ -21,3 +21,13 @@ class TeamCreateAPIView(generics.CreateAPIView):
     model = models.Team
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = serializers.TeamCreateSerializer
+
+
+class TeamDetailAPIView(generics.RetrieveAPIView):
+    queryset = models.Team.objects.filter(is_deleted=False)
+    serializer_class = serializers.TeamDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = self.queryset.filter(user_id=self.request.user.pk)
+        return qs
