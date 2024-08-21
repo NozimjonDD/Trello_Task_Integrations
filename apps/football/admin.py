@@ -115,6 +115,10 @@ class PlayerAdmin(admin.ModelAdmin):
 
     profile_pic.short_description = _("Profile picture")
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related("club", "position", )
+        return qs
+
 
 @admin.register(models.ClubPlayer)
 class ClubPlayerAdmin(admin.ModelAdmin):

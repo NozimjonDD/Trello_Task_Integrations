@@ -45,7 +45,7 @@ class FormationPosition(BaseModel):
     coordinate_y = models.IntegerField(verbose_name=_("Coordinate Y"), default=0)
 
     def __str__(self):
-        return f"{self.formation} - [{self.coordinate_x}:{self.coordinate_y}]"
+        return f"{self.formation} - {self.index}"
 
 
 class Team(BaseModel):
