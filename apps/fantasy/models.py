@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from apps.common.data import LeagueStatusType, TeamStatusChoices
+from apps.common.data import LeagueStatusType, TeamStatusChoices, TransferTypeChoices
 from apps.common.models import BaseModel
 from apps.common import utils as common_utils
 
@@ -74,7 +74,11 @@ class TeamPlayer(BaseModel):
         verbose_name_plural = _("Team players")
 
     team = models.ForeignKey(to="fantasy.Team", on_delete=models.CASCADE, related_name="team_players")
-    player = models.ForeignKey(to="football.Player", on_delete=models.CASCADE, related_name="+")
+    player = models.ForeignKey(
+        to="football.Player",
+        on_delete=models.CASCADE,
+        related_name="team_players",
+    )
     position = models.ForeignKey(to="football.Position", on_delete=models.SET_NULL, null=True)
     is_captain = models.BooleanField(default=False)
     is_substitution = models.BooleanField(default=False)
@@ -131,6 +135,48 @@ class SquadPlayer(BaseModel):
 
     def __str__(self):
         return f"{self.player} - {self.position}"
+
+
+class Transfer(BaseModel):
+    class Meta:
+        db_table = "fantasy_player_transfer"
+        verbose_name = _("Fantasy transfer")
+        verbose_name_plural = _("Fantasy transfers")
+
+    transfer_type = models.CharField(
+        verbose_name=_("Transfer type"),
+        max_length=100,
+        choices=TransferTypeChoices.choices,
+    )
+    team = models.ForeignKey(
+        to="fantasy.Team",
+        on_delete=models.CASCADE,
+        related_name="transfers",
+        verbose_name=_("Team"),
+    )
+    player = models.ForeignKey(
+        to="football.Player",
+        on_delete=models.CASCADE,
+        related_name="+",
+        verbose_name=_("Player"),
+    )
+    swapped_player = models.ForeignKey(
+        to="football.Player",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name=_("Swapped player"),
+        null=True, blank=True,
+    )
+
+    fee = models.DecimalField(
+        verbose_name=_("Fee"),
+        max_digits=18,
+        decimal_places=2,
+        help_text="£(pound sterling)"
+    )
+
+    def __str__(self):
+        return f"{self.team} - {self.transfer_type} - £{self.fee}"
 
 
 class FantasyLeague(BaseModel):

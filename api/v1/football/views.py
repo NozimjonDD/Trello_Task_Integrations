@@ -17,7 +17,11 @@ class PlayerListAPIView(generics.ListAPIView):
     }
 
     def get_queryset(self):
-        qs = self.queryset.select_related("club", "position")
+        qs = self.queryset
+
+        if hasattr(self.request.user, "team"):
+            qs = qs.exclude(team_players__team_id=self.request.user.team.id)
+        qs = qs.select_related("club", "position")
         return qs
 
 
