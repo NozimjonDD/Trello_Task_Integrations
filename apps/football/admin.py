@@ -128,3 +128,10 @@ class ClubPlayerAdmin(admin.ModelAdmin):
     search_fields = ("club__name", "player__full_name",)
     list_filter = ("is_captain", "is_current_club", "start_date", "end_date",)
     autocomplete_fields = ("club", "player",)
+
+
+@admin.register(models.PremierLeagueStatusByPlayer)
+class PremierLeagueStatusByPlayerAdmin(admin.ModelAdmin):
+    list_display = ("now_cost", "first_name", "second_name", "total_points",
+                    "web_name", "goals_scored", "team", "threat",
+                    "own_goals", "penalties_saved", "bonus",)
