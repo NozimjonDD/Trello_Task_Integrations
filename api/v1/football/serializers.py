@@ -70,3 +70,16 @@ class PlayerDetailSerializer(serializers.ModelSerializer):
             "assist_count",
             "yellow_card_count",
         )
+
+
+class ClubListSerializer(serializers.ModelSerializer):
+    logo = serializers.URLField(source="logo_path")
+
+    class Meta:
+        model = models.Club
+        fields = (
+            "id",
+            "name",
+            "short_name",
+            "logo",
+        )

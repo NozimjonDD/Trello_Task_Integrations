@@ -29,3 +29,10 @@ class PlayerDetailAPIView(generics.RetrieveAPIView):
     queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
     serializer_class = serializers.PlayerDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class ClubListAPIView(generics.ListAPIView):
+    queryset = models.Club.objects.filter(is_deleted=False, league__remote_id=271)
+    serializer_class = serializers.ClubListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    search_fields = ("name", "short_name",)
