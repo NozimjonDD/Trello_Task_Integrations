@@ -47,7 +47,7 @@ JAZZMIN_SETTINGS = {
         {"model": "user.User"},
 
         # App with dropdown menu to all its models pages (Permissions checked against models)
-        {"app": "books"},
+        # {"app": "books"},
     ],
 
     #############

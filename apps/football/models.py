@@ -234,3 +234,63 @@ class ClubPlayer(FootballBaseModel):
 
     def __str__(self):
         return f"{self.player} - {self.club}"
+
+
+class PremierLeagueStatusByPlayer(FootballBaseModel):
+
+    """ PremierLeague Player Statistics """
+
+    class Meta:
+        db_table = "premier_league_player"
+
+    code = models.IntegerField(null=True)
+    dreamteam_count = models.IntegerField(null=True)
+    in_dreamteam = models.BooleanField(default=False)
+    element_type = models.IntegerField(null=True)
+    ep_next = models.CharField(max_length=255, null=True)
+    ep_this = models.CharField(max_length=255, null=True)
+    form = models.CharField(max_length=255, null=True)
+    value_form = models.CharField(max_length=255, null=True)
+    value_season = models.CharField(max_length=255, null=True)
+    selected_by_percent = models.CharField(max_length=255, null=True)
+    points_per_game = models.CharField(max_length=255, null=True)
+    now_cost = models.IntegerField(null=True, blank=True)
+    web_name = models.CharField(max_length=255, null=True)
+    first_name = models.CharField(max_length=255, null=True)
+    second_name = models.CharField(max_length=255, null=True)
+    special = models.CharField(max_length=255, null=True)
+    squad_number = models.CharField(max_length=255, null=True)
+    status = models.CharField(max_length=255, null=True)
+    photo = models.CharField(max_length=255, null=True)
+    photo_url = models.URLField()
+    event_points = models.IntegerField(null=True)
+    team = models.IntegerField(null=True)
+    team_code = models.IntegerField(null=True)
+    total_points = models.IntegerField(null=True)
+    transfers_in = models.IntegerField(null=True)
+    transfers_out = models.IntegerField(null=True)
+    goals_scored = models.IntegerField(null=True)
+    clean_sheets = models.IntegerField(null=True)
+    goals_conceded = models.IntegerField(null=True)
+    own_goals = models.IntegerField(null=True)
+    penalties_saved = models.IntegerField(null=True)
+    penalties_missed = models.IntegerField(null=True)
+    yellow_cards = models.IntegerField(null=True)
+    red_cards = models.IntegerField(null=True)
+    saves = models.IntegerField(null=True)
+    bonus = models.IntegerField(null=True)
+    bps = models.IntegerField(null=True)
+    influence_rank = models.IntegerField(null=True)
+    creativity_rank = models.IntegerField(null=True)
+    threat_rank = models.IntegerField(null=True)
+    ict_index_rank = models.IntegerField(null=True)
+    now_cost_rank = models.IntegerField(null=True)
+    form_rank = models.IntegerField(null=True)
+    selected_rank = models.IntegerField(null=True)
+    direct_freekicks_order = models.IntegerField(null=True)
+    penalties_order = models.IntegerField(null=True)
+    influence = models.CharField(max_length=255, null=True)
+    creativity = models.CharField(max_length=255, null=True)
+    threat = models.CharField(max_length=255, null=True)
+    ict_index = models.CharField(max_length=255, null=True)
+    expected_goals = models.CharField(max_length=255, null=True)

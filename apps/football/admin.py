@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from django.utils.translation import gettext_lazy as _
-
+from django.utils.html import mark_safe
 from . import models, actions
 
 
@@ -129,3 +129,21 @@ class ClubPlayerAdmin(admin.ModelAdmin):
     search_fields = ("club__name", "player__full_name",)
     list_filter = ("is_captain", "is_current_club", "start_date", "end_date",)
     autocomplete_fields = ("club", "player",)
+
+
+@admin.register(models.PremierLeagueStatusByPlayer)
+class PremierLeagueStatusByPlayerAdmin(admin.ModelAdmin):
+    actions = (actions.update_premierleague_players_action,)
+
+    list_display = ("image_tag", "now_cost", "first_name", "second_name",
+                    "web_name", "total_points", "selected_by_percent", "goals_scored", "team", "threat",
+                    "own_goals", "penalties_saved", "bonus",)
+
+    search_fields = ("web_name", "first_name", "second_name", )
+
+    def image_tag(self, obj):
+        if obj.photo_url:
+            return mark_safe('<img class="image" src="%s" width="50" height="50" />' % (obj.photo_url))
+        return None
+
+    image_tag.short_description = _("Profile picture")

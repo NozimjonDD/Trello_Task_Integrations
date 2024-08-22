@@ -66,3 +66,25 @@ class SportMonksAPIClient:
     def fetch_fixture_states(self, page=1, per_page=50):
         endpoint = f"/{SPORT}/states?page={page}&per_page={per_page}"
         return self.fetch_base(endpoint)
+
+
+class PremierLeagueAPIClient:
+    def __init__(self):
+        self.BASE_URL = f"https://fantasy.premierleague.com/api"
+
+    def fetch_base(self, endpoint) -> (bool, dict):
+        url = self.BASE_URL + endpoint
+
+        try:
+            resp = requests.get(url=url, timeout=20)
+        except (requests.ConnectionError, requests.Timeout) as e:
+            return False, {"error": e}
+        try:
+            data = resp.json()
+        except requests.JSONDecodeError as e:
+            return False, {"error": e}
+        return True, data
+
+    def fetch_statistics(self):
+        endpoint = f"/bootstrap-static/"
+        return self.fetch_base(endpoint)

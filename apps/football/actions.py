@@ -61,3 +61,10 @@ def update_positions_action(model_admin, request, queryset):
 def update_fixture_states_action(model_admin, request, queryset):
     utils.update_fixture_states()
     model_admin.message_user(request, _("Fixture states updated!"))
+
+
+@admin.action(description=_("Update PremierLeague players Statistics"))
+def update_premierleague_players_action(model_admin, request, queryset):
+    """ Update PremierLeague Player Statistics """
+    utils.update_premierleague_status_by_players()
+    model_admin.message_user(request, _("Update PremierLeague Player Statistics!"))
