@@ -135,9 +135,11 @@ class ClubPlayerAdmin(admin.ModelAdmin):
 class PremierLeagueStatusByPlayerAdmin(admin.ModelAdmin):
     actions = (actions.update_premierleague_players_action,)
 
-    list_display = ("image_tag", "now_cost", "first_name", "second_name", "total_points",
-                    "web_name", "goals_scored", "team", "threat",
+    list_display = ("image_tag", "now_cost", "first_name", "second_name",
+                    "web_name", "total_points", "selected_by_percent", "goals_scored", "team", "threat",
                     "own_goals", "penalties_saved", "bonus",)
+
+    search_fields = ("web_name", "first_name", "second_name", )
 
     def image_tag(self, obj):
         if obj.photo_url:
