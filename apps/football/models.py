@@ -242,6 +242,8 @@ class PremierLeagueStatusByPlayer(FootballBaseModel):
 
     class Meta:
         db_table = "premier_league_player"
+        verbose_name = _("Premier League Player")
+        verbose_name_plural = _("Premier League Players")
 
     code = models.IntegerField(null=True)
     dreamteam_count = models.IntegerField(null=True)
@@ -294,3 +296,6 @@ class PremierLeagueStatusByPlayer(FootballBaseModel):
     threat = models.CharField(max_length=255, null=True)
     ict_index = models.CharField(max_length=255, null=True)
     expected_goals = models.CharField(max_length=255, null=True)
+
+    def __str__(self):
+        return f"{self.code} - {self.web_name}"
