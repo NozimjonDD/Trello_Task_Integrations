@@ -1,4 +1,5 @@
 from django.db import transaction
+from rest_framework import serializers
 
 from . import service, models
 
@@ -367,3 +368,20 @@ def update_players():
 
         has_more = resp_data["pagination"]["has_more"]
         page += 1
+
+
+@transaction.atomic
+def update_premierleague_status_by_players():
+    success, resp_data = service.PremierLeagueAPIClient().fetch_statistics()
+
+    try:
+        players_data = resp_data['elements']
+    except Exception as e:
+        raise serializers.ValidationError(
+            {"API": "Invalid  data", "message": "Problem with API response"}
+        )
+
+    pass
+
+    count = 0
+
