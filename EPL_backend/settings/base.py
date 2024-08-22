@@ -36,8 +36,12 @@ DJANGO_APPS = [
 ]
 
 MY_APPS = [
-    "users.apps.UsersConfig",
-    "common.apps.CommonConfig",
+    "apps.users.apps.UsersConfig",
+    "apps.common.apps.CommonConfig",
+    "apps.fantasy.apps.FantasyConfig",
+    "apps.football.apps.FootballConfig",
+    "apps.finance.apps.FinanceConfig",
+    "apps.notification.apps.NotificationConfig",
 ]
 THIRD_PARTY_APPS = [
     "rest_framework",
@@ -212,3 +216,6 @@ SIMPLE_JWT = {
 }
 
 OTP_EXPIRATION_TIME = 120  # seconds
+
+# SPORTMONKS
+SPORTMONKS_APIKEY = os.environ.get("SPORTMONKS_APIKEY", default="dummy")

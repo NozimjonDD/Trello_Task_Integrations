@@ -1,13 +1,13 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from users import utils
+from apps.common import utils as common_utils
 
 
 class PhoneNumberField(serializers.CharField):
     def __init__(self, **kwargs):
         kwargs["max_length"] = 13
         kwargs["min_length"] = 13
-        kwargs["validators"] = [utils.phone_number_validator]
+        kwargs["validators"] = [common_utils.phone_number_validator]
         super().__init__(**kwargs)
 
 

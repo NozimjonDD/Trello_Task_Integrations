@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 
-from users import models
+from apps.users import models
 from . import serializers
 
 

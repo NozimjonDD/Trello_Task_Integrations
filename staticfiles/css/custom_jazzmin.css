@@ -1,0 +1,12 @@
+/*.jazzmin-login-page .login-logo img {*/
+/*    width: 40%;*/
+/*}*/
+
+.brand-image {
+    box-shadow: none !important;
+}
+
+.nav-sidebar .nav-treeview {
+    padding-left: 20px;
+    overflow: hidden;
+}
