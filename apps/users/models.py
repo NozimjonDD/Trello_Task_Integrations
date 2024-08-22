@@ -50,7 +50,7 @@ class User(AbstractUser, BaseModel):
         blank=True,
     )
 
-    balance = models.DecimalField(verbose_name=_("Balance"), max_digits=18, decimal_places=2, default=1000000)
+    balance = models.DecimalField(verbose_name=_("Balance"), max_digits=18, decimal_places=2, default=100000000)
 
     EMAIL_FIELD = None
     USERNAME_FIELD = "phone_number"

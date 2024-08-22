@@ -21,6 +21,36 @@ class Formation(BaseModel):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        from apps.football import models as football_models
+
+        if self.pk and not self.positions.exists():
+            # default scheme 4-3-3
+
+            position = None
+            is_substitution = False
+            for i in range(1, 16):
+                if i >= 12:
+                    is_substitution = True
+
+                if i == 1 or i == 12:
+                    position = football_models.Position.objects.get(remote_id=24)
+                elif 1 < i <= 5 or i == 13:
+                    position = football_models.Position.objects.get(remote_id=25)
+                elif 5 < i <= 8 or i in [14, 15]:
+                    position = football_models.Position.objects.get(remote_id=26)
+                elif 8 < i <= 11:
+                    position = football_models.Position.objects.get(remote_id=27)
+
+                FormationPosition.objects.create(
+                    formation_id=self.pk,
+                    position=position,
+                    is_substitution=is_substitution,
+                    ordering=i,
+                )
+
 
 class FormationPosition(BaseModel):
     class Meta:
@@ -40,12 +70,11 @@ class FormationPosition(BaseModel):
         related_name="+",
         verbose_name=_("Position"),
     )
-    index = models.IntegerField(verbose_name=_("Index"), default=0)
-    coordinate_x = models.IntegerField(verbose_name=_("Coordinate X"), default=0)
-    coordinate_y = models.IntegerField(verbose_name=_("Coordinate Y"), default=0)
+    is_substitution = models.BooleanField(default=False, verbose_name=_("Is substitution"))
+    ordering = models.IntegerField(verbose_name=_("Ordering"), default=1)
 
     def __str__(self):
-        return f"{self.formation} - {self.index}"
+        return f"{self.formation} - {self.ordering}"
 
 
 class Team(BaseModel):
@@ -112,6 +141,7 @@ class SquadPlayer(BaseModel):
         db_table = "fantasy_squad_player"
         verbose_name = _("Squad player")
         verbose_name_plural = _("Squad players")
+        unique_together = ("squad", "player", "position")
 
     squad = models.ForeignKey(
         to="fantasy.Squad",
@@ -121,9 +151,11 @@ class SquadPlayer(BaseModel):
     )
     player = models.ForeignKey(
         to="fantasy.TeamPlayer",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name=_("Team player")
+        verbose_name=_("Team player"),
+        null=True,
+        blank=True,
     )
     position = models.ForeignKey(
         to="fantasy.FormationPosition",
@@ -169,11 +201,11 @@ class Transfer(BaseModel):
         null=True, blank=True,
     )
 
-    formation_position = models.ForeignKey(
-        to="fantasy.FormationPosition",
+    squad_player = models.ForeignKey(
+        to="fantasy.SquadPlayer",
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name=_("Formation position"),
+        verbose_name=_("Squad player"),
         null=True,
         blank=True,
     )
@@ -197,12 +229,9 @@ class Transfer(BaseModel):
                 position_id=self.player.position_id,
             )
 
-            if self.formation_position:
-                SquadPlayer.objects.create(
-                    squad_id=self.team.default_squad.pk,
-                    player_id=team_player.pk,
-                    position_id=self.formation_position.pk,
-                )
+            if self.squad_player:
+                self.squad_player.player = team_player
+                self.squad_player.save(update_fields=["player"])
 
         elif self.transfer_type == TransferTypeChoices.SELL:
             self.team.user.balance += self.fee

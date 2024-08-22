@@ -11,6 +11,7 @@ class FormationListAPIView(generics.ListAPIView):
     search_fields = (
         "title",
     )
+    pagination_class = None
 
     def get_queryset(self):
         qs = self.queryset.prefetch_related("positions")
@@ -30,6 +31,16 @@ class TeamDetailAPIView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         qs = self.queryset.filter(user_id=self.request.user.pk)
+        return qs
+
+
+class SquadDetailUpdateAPIView(generics.RetrieveUpdateAPIView):
+    queryset = models.Squad.objects.filter(is_deleted=False)
+    serializer_class = serializers.SquadDetailUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = self.queryset.filter(team__user_id=self.request.user.pk)
         return qs
 
 

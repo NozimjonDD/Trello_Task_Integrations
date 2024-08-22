@@ -26,14 +26,14 @@ class _FormationPositionSerializer(serializers.ModelSerializer):
 
 
 class FormationListSerializer(serializers.ModelSerializer):
-    positions = _FormationPositionSerializer(many=True)
+    # positions = _FormationPositionSerializer(many=True)
 
     class Meta:
         model = models.Formation
         fields = (
             "id",
             "title",
-            "positions",
+            # "positions",
         )
 
 
@@ -64,11 +64,18 @@ class TeamCreateSerializer(serializers.ModelSerializer):
 
         instance = super().create(validated_data)
 
-        models.Squad.objects.create(
+        squad = models.Squad.objects.create(
             team=instance,
             formation=models.Formation.objects.get(scheme="4-3-3"),
             is_default=True,
         )
+        for f_position in models.FormationPosition.objects.filter(formation__scheme="4-3-3"):
+            models.SquadPlayer.objects.create(
+                squad=squad,
+                position=f_position,
+                player=None,
+                is_substitution=f_position.is_substitution,
+            )
         return instance
 
 
@@ -102,20 +109,62 @@ class _DefaultSquadPlayerSerializer(serializers.ModelSerializer):
 
 class _DefaultSquadSerializer(serializers.ModelSerializer):
     formation = common_serializers.CommonFormationSerializer()
-    squad_players = _DefaultSquadPlayerSerializer(many=True, source="players")
+
+    gk = serializers.SerializerMethodField()
+    squad_players = serializers.SerializerMethodField()
+    substitutes = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Squad
         fields = (
             "id",
             "formation",
+            "gk",
             "squad_players",
+            "substitutes",
         )
+
+    @staticmethod
+    def get_squad_players(obj):
+        squad_players = obj.players.filter(
+            is_substitution=False
+        ).exclude(position__position__short_name="GK").order_by("position__ordering")
+
+        squad_players = list(squad_players)
+
+        scheme = obj.formation.scheme
+
+        result = []
+        cnt = 0
+        for i in scheme.split("-"):
+            section = []
+            for j in range(int(i)):
+                section.append(_DefaultSquadPlayerSerializer(squad_players[cnt], many=False).data)
+                cnt += 1
+            result.append(section)
+
+        return result
+
+    @staticmethod
+    def get_gk(obj):
+        gk = obj.players.filter(
+            is_substitution=False,
+            position__position__short_name="GK"
+        ).first()
+        return _DefaultSquadPlayerSerializer(gk, many=False).data
+
+    @staticmethod
+    def get_substitutes(obj):
+        substitutes = obj.players.filter(
+            is_substitution=True
+        ).order_by("position__ordering")
+        return _DefaultSquadPlayerSerializer(substitutes, many=True).data
 
 
 class TeamDetailSerializer(serializers.ModelSerializer):
     default_squad = _DefaultSquadSerializer(read_only=True)
-    team_players = _TeamPlayerSerializer(many=True)
+
+    # team_players = _TeamPlayerSerializer(many=True)
 
     class Meta:
         model = models.Team
@@ -125,15 +174,38 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             "status",
 
             "default_squad",
-            "team_players",
+            # "team_players",
 
             "created_at",
             "updated_at",
         )
 
 
+class SquadDetailUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Squad
+        fields = (
+            "id",
+            "formation",
+            "is_default",
+        )
+        extra_kwargs = {
+            "is_default": {"read_only": True},
+            "formation": {"required": True},
+        }
+
+
 class TransferSerializer(serializers.ModelSerializer):
-    player = football_models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
+    player = serializers.PrimaryKeyRelatedField(
+        queryset=football_models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
+    )
+    squad_player = serializers.PrimaryKeyRelatedField(
+        queryset=models.SquadPlayer.objects.filter(
+            is_deleted=False, player=None, squad__is_default=True
+        ),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = models.Transfer
@@ -143,7 +215,7 @@ class TransferSerializer(serializers.ModelSerializer):
             "team",
             "player",
             "swapped_player",
-            "formation_position",
+            "squad_player",
             "fee",
         )
         extra_kwargs = {
@@ -151,12 +223,16 @@ class TransferSerializer(serializers.ModelSerializer):
             "team": {"read_only": True},
         }
 
+    def validate_squad_player(self, value):
+        team = self.context["request"].user.p_team
+        return value
+
     def validate(self, attrs):
         transfer_type = attrs["transfer_type"]
         team = self.context["request"].user.p_team
         player = attrs["player"]
         swapped_player = attrs.get("swapped_player", None)
-        formation_position = attrs.get("formation_position", None)
+        squad_player = attrs.get("squad_player", None)
 
         if not team:
             raise serializers.ValidationError(

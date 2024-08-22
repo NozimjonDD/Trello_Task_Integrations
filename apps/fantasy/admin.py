@@ -10,6 +10,7 @@ class FormationPositionInline(admin.StackedInline):
     model = models.FormationPosition
     autocomplete_fields = ("position",)
     exclude = ("is_deleted", "deleted_at",)
+    ordering = ("is_substitution", "ordering",)
 
 
 @admin.register(models.Formation)
@@ -21,6 +22,11 @@ class FormationAdmin(admin.ModelAdmin):
     ordering = ("ordering",)
     exclude = ("is_deleted", "deleted_at",)
     inlines = (FormationPositionInline,)
+
+
+@admin.register(models.FormationPosition)
+class FormationPositionAdmin(admin.ModelAdmin):
+    search_fields = ("formation__title", "position__name", "position__short_name",)
 
 
 @admin.register(models.Team)
@@ -57,6 +63,13 @@ class TeamPlayerAdmin(admin.ModelAdmin):
         return qs
 
 
+class SquadPlayerInline(admin.StackedInline):
+    extra = 0
+    model = models.SquadPlayer
+    autocomplete_fields = ("player", "position",)
+    exclude = ("is_deleted", "deleted_at",)
+
+
 @admin.register(models.Squad)
 class SquadAdmin(admin.ModelAdmin):
     list_display = ("team", "round", "formation", "is_default", "created_at", "id",)
@@ -65,6 +78,7 @@ class SquadAdmin(admin.ModelAdmin):
     search_fields = ("team__name", "formation__title",)
     autocomplete_fields = ("team", "round", "formation",)
     exclude = ("is_deleted", "deleted_at",)
+    inlines = (SquadPlayerInline,)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request).select_related("team", "round", "formation", )

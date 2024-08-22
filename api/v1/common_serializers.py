@@ -46,7 +46,6 @@ class CommonFormationPositionSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "position",
-            "index",
         )
 
 
