@@ -240,6 +240,9 @@ class PremierLeagueStatusByPlayer(FootballBaseModel):
 
     """ PremierLeague Player Statistics """
 
+    class Meta:
+        db_table = "premier_league_player"
+
     code = models.IntegerField(null=True)
     dreamteam_count = models.IntegerField(null=True)
     in_dreamteam = models.BooleanField(default=False)
