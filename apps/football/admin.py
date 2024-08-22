@@ -97,6 +97,7 @@ class PlayerAdmin(admin.ModelAdmin):
         "club",
         "club_contract_until",
         "position",
+        "pretty_market_value",
         "date_of_birth",
         "age",
         "gender",

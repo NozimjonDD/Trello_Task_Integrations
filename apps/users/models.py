@@ -90,6 +90,10 @@ class User(AbstractUser, BaseModel):
             return self._account_settings
         return AccountSettings.objects.create(user_id=self.pk)
 
+    @property
+    def pretty_balance(self):
+        return common_utils.pretty_price(self.balance)
+
 
 class AccountSettings(BaseModel):
     class Meta:

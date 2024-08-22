@@ -19,7 +19,11 @@ class PlayerListAPIView(generics.ListAPIView):
     }
 
     def get_queryset(self):
-        qs = self.queryset.select_related("club", "position")
+        qs = self.queryset
+
+        if hasattr(self.request.user, "team"):
+            qs = qs.exclude(team_players__team_id=self.request.user.team.id)
+        qs = qs.select_related("club", "position")
         return qs
 
 
@@ -34,3 +38,10 @@ class UpdatePremierLeagueStat(views.APIView):
         count = update_premierleague_status_by_players()
 
         return Response({"message": "class A", "count": count})
+
+
+class ClubListAPIView(generics.ListAPIView):
+    queryset = models.Club.objects.filter(is_deleted=False, league__remote_id=271)
+    serializer_class = serializers.ClubListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    search_fields = ("name", "short_name",)

@@ -31,3 +31,9 @@ class TeamDetailAPIView(generics.RetrieveAPIView):
     def get_queryset(self):
         qs = self.queryset.filter(user_id=self.request.user.pk)
         return qs
+
+
+class TransferAPIView(generics.CreateAPIView):
+    model = models.Transfer
+    serializer_class = serializers.TransferSerializer
+    permission_classes = [permissions.IsAuthenticated]

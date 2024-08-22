@@ -27,7 +27,8 @@ class AccountSettingsInline(admin.StackedInline):
 class UserAdmin(DjangoUserAdmin):
     list_display = (
         "phone_number", "username", "profile_pic_html", "first_name",
-        "last_name", "middle_name", "role", "is_active", "is_staff", "is_superuser", "date_joined", "id",
+        "last_name", "middle_name", "pretty_balance", "role", "is_active", "is_staff", "is_superuser", "date_joined",
+        "id",
     )
     list_display_links = ("phone_number",)
     list_filter = ("role", "is_active", "is_staff", "is_superuser", "date_joined")
@@ -35,7 +36,10 @@ class UserAdmin(DjangoUserAdmin):
         (None, {"fields": ("phone_number", "username", "password")}),
         (
             _("Personal info"),
-            {"fields": ("first_name", "last_name", "middle_name", "profile_picture", "date_of_birth")}
+            {"fields": (
+                "first_name", "last_name", "middle_name",
+                "profile_picture", "date_of_birth", "balance", "pretty_balance",
+            )}
         ),
         (
             _("Permissions"),
@@ -63,6 +67,7 @@ class UserAdmin(DjangoUserAdmin):
     )
     ordering = ("-date_joined",)
     inlines = (AccountSettingsInline,)
+    readonly_fields = ("pretty_balance",)
 
     def profile_pic_html(self, obj):
         if obj.profile_picture:

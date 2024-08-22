@@ -28,6 +28,7 @@ class PlayerListSerializer(serializers.ModelSerializer):
             "weight",
 
             "market_value",
+            "pretty_market_value",
         )
 
 
@@ -61,10 +62,24 @@ class PlayerDetailSerializer(serializers.ModelSerializer):
             "weight",
 
             "market_value",
+            "pretty_market_value",
             "club_contract_until",
 
             "match_count",
             "goal_count",
             "assist_count",
             "yellow_card_count",
+        )
+
+
+class ClubListSerializer(serializers.ModelSerializer):
+    logo = serializers.URLField(source="logo_path")
+
+    class Meta:
+        model = models.Club
+        fields = (
+            "id",
+            "name",
+            "short_name",
+            "logo",
         )
