@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from apps.fantasy import models
+from apps.common.data import TransferTypeChoices
 
 from api.v1 import common_serializers
 
@@ -128,3 +129,69 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
+
+
+class TransferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Transfer
+        fields = (
+            "id",
+            "transfer_type",
+            "team",
+            "player",
+            "swapped_player",
+            "fee",
+        )
+        extra_kwargs = {
+            "fee": {"read_only": True},
+            "team": {"read_only": True},
+        }
+
+    def validate(self, attrs):
+        transfer_type = attrs["transfer_type"]
+        team = self.context["request"].user.p_team
+        player = attrs["player"]
+        swapped_player = attrs.get("swapped_player", None)
+
+        if not team:
+            raise serializers.ValidationError(
+                code="not_created",
+                detail={"team": [_("You have not created a team!")]}
+            )
+
+        if team.team_players.filter(is_deleted=False).count() >= 15:
+            raise serializers.ValidationError(
+                code="full_team",
+                detail={"team": [_("Your team is full!")]}
+            )
+
+        if transfer_type == TransferTypeChoices.BUY:
+            if not player.market_value or player.market_value > team.user.balance:
+                raise serializers.ValidationError(
+                    code="insufficient_balance",
+                    detail={"player": [_("You do not have enough balance to buy this player!")]}
+                )
+            try:
+                del attrs["swapped_player"]
+            except KeyError:
+                pass
+
+        elif transfer_type == TransferTypeChoices.SELL:
+            raise serializers.ValidationError("Not implemented!")
+        elif transfer_type == TransferTypeChoices.SWAP:
+            raise serializers.ValidationError("Not implemented!")
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        team = self.context["request"].user.p_team
+        transfer_type = validated_data["transfer_type"]
+
+        validated_data["team"] = team
+        validated_data["fee"] = 0
+        if transfer_type in [TransferTypeChoices.BUY, TransferTypeChoices.SELL]:
+            validated_data["fee"] = validated_data["player"].market_value
+        instance = super().create(validated_data)
+
+        instance.apply()
+        return instance

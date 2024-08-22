@@ -178,6 +178,22 @@ class Transfer(BaseModel):
     def __str__(self):
         return f"{self.team} - {self.transfer_type} - £{self.fee}"
 
+    def apply(self):
+        if self.transfer_type == TransferTypeChoices.BUY:
+            self.team.user.balance -= self.fee
+            TeamPlayer.objects.create(
+                team_id=self.pk,
+                player_id=self.player_id,
+                position_id=self.player.position_id,
+            )
+
+        elif self.transfer_type == TransferTypeChoices.SELL:
+            self.team.user.balance += self.fee
+        elif self.transfer_type == TransferTypeChoices.SWAP:
+            pass
+
+        self.team.user.save(update_fields=["balance"])
+
 
 class FantasyLeague(BaseModel):
     class Meta:
