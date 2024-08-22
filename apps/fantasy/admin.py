@@ -84,6 +84,20 @@ class SquadPlayerAdmin(admin.ModelAdmin):
         return qs
 
 
+@admin.register(models.Transfer)
+class TransferAdmin(admin.ModelAdmin):
+    list_display = ("team", "transfer_type", "player", "swapped_player", "fee", "created_at", "id",)
+    list_display_links = ("team", "id",)
+    search_fields = ("team__name", "player__first_name", "player__full_name", "player__common_name", "fee", "id",)
+    list_filter = ("transfer_type", "created_at",)
+    autocomplete_fields = ("team", "player", "swapped_player",)
+    exclude = ("is_deleted", "deleted_at",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related("team", "player", "swapped_player", )
+        return qs
+
+
 @admin.register(models.FantasyLeague)
 class FantasyLeagueAdmin(admin.ModelAdmin):
     pass

@@ -91,6 +91,7 @@ JAZZMIN_SETTINGS = {
         "fantasy.TeamPlayer",
         "fantasy.Squad",
         "fantasy.SquadPlayer",
+        "fantasy.Transfer",
         "fantasy.FantasyLeague",
         "fantasy.LeagueParticipant",
         "fantasy.Formation",
@@ -122,6 +123,8 @@ JAZZMIN_SETTINGS = {
         "fantasy.TeamPlayer": "fas fa-user",
         "fantasy.Squad": "fas fa-users-cog",
         "fantasy.SquadPlayer": "fas fa-user-friends",
+        "fantasy.Transfer": "fas fa-exchange-alt",
+
         "fantasy.FantasyLeague": "fas fa-trophy",
         "fantasy.LeagueParticipant": "fas fa-users",
         "fantasy.Formation": "fas fa-grip-horizontal",

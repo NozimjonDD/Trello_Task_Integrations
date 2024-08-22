@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='balance',
-            field=models.DecimalField(decimal_places=2, default=1000000, max_digits=18, verbose_name='Balance'),
+            field=models.DecimalField(decimal_places=2, default=1000000000, max_digits=18, verbose_name='Balance'),
         ),
     ]

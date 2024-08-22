@@ -38,6 +38,7 @@ class AccountDetailSerializer(serializers.ModelSerializer):
             "profile_picture",
             "date_of_birth",
             "balance",
+            "pretty_balance",
 
             "team",
             "account_settings",

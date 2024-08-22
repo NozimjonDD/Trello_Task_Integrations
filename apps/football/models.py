@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.common.models import BaseModel
+from apps.common import utils as common_utils
 
 
 class FootballBaseModel(BaseModel):
@@ -207,6 +208,13 @@ class Player(FootballBaseModel):
         age = today.year - self.date_of_birth.year - (
                 (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
         return age
+
+    @property
+    def pretty_market_value(self):
+        if not self.market_value:
+            return None
+
+        return common_utils.pretty_price(self.market_value)
 
 
 class ClubPlayer(FootballBaseModel):

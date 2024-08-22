@@ -72,6 +72,7 @@ class TeamPlayer(BaseModel):
         db_table = "fantasy_team_player"
         verbose_name = _("Team player")
         verbose_name_plural = _("Team players")
+        unique_together = ("team", "player",)
 
     team = models.ForeignKey(to="fantasy.Team", on_delete=models.CASCADE, related_name="team_players")
     player = models.ForeignKey(
@@ -168,6 +169,15 @@ class Transfer(BaseModel):
         null=True, blank=True,
     )
 
+    formation_position = models.ForeignKey(
+        to="fantasy.FormationPosition",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name=_("Formation position"),
+        null=True,
+        blank=True,
+    )
+
     fee = models.DecimalField(
         verbose_name=_("Fee"),
         max_digits=18,
@@ -181,14 +191,27 @@ class Transfer(BaseModel):
     def apply(self):
         if self.transfer_type == TransferTypeChoices.BUY:
             self.team.user.balance -= self.fee
-            TeamPlayer.objects.create(
-                team_id=self.pk,
+            team_player = TeamPlayer.objects.create(
+                team_id=self.team_id,
                 player_id=self.player_id,
                 position_id=self.player.position_id,
             )
 
+            if self.formation_position:
+                SquadPlayer.objects.create(
+                    squad_id=self.team.default_squad.pk,
+                    player_id=team_player.pk,
+                    position_id=self.formation_position.pk,
+                )
+
         elif self.transfer_type == TransferTypeChoices.SELL:
             self.team.user.balance += self.fee
+            try:
+                team_player = TeamPlayer.objects.get(team_id=self.team_id, player_id=self.player_id)
+                team_player.delete()
+            except TeamPlayer.DoesNotExist:
+                pass
+
         elif self.transfer_type == TransferTypeChoices.SWAP:
             pass
 

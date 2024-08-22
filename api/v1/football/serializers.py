@@ -28,6 +28,7 @@ class PlayerListSerializer(serializers.ModelSerializer):
             "weight",
 
             "market_value",
+            "pretty_market_value",
         )
 
 
@@ -61,6 +62,7 @@ class PlayerDetailSerializer(serializers.ModelSerializer):
             "weight",
 
             "market_value",
+            "pretty_market_value",
             "club_contract_until",
 
             "match_count",

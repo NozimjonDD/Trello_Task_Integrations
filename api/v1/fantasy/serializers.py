@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from apps.fantasy import models
+from apps.football import models as football_models
 from apps.common.data import TransferTypeChoices
 
 from api.v1 import common_serializers
@@ -132,6 +133,8 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 
 
 class TransferSerializer(serializers.ModelSerializer):
+    player = football_models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
+
     class Meta:
         model = models.Transfer
         fields = (
@@ -140,6 +143,7 @@ class TransferSerializer(serializers.ModelSerializer):
             "team",
             "player",
             "swapped_player",
+            "formation_position",
             "fee",
         )
         extra_kwargs = {
@@ -152,6 +156,7 @@ class TransferSerializer(serializers.ModelSerializer):
         team = self.context["request"].user.p_team
         player = attrs["player"]
         swapped_player = attrs.get("swapped_player", None)
+        formation_position = attrs.get("formation_position", None)
 
         if not team:
             raise serializers.ValidationError(
@@ -159,25 +164,49 @@ class TransferSerializer(serializers.ModelSerializer):
                 detail={"team": [_("You have not created a team!")]}
             )
 
-        if team.team_players.filter(is_deleted=False).count() >= 15:
-            raise serializers.ValidationError(
-                code="full_team",
-                detail={"team": [_("Your team is full!")]}
-            )
-
         if transfer_type == TransferTypeChoices.BUY:
+            if team.team_players.filter(is_deleted=False).count() >= 15:
+                raise serializers.ValidationError(
+                    code="full_team",
+                    detail={"team": [_("You can transfer players upto 15.")]}
+                )
+
+            if team.team_players.filter(player__club_id=player.club.id).count() >= 3:
+                raise serializers.ValidationError(
+                    code="club_limit_reached",
+                    detail={"player": [_("You can transfer upto 3 players from one club.")]}
+                )
+
+            if team.team_players.filter(player_id=player.id).exists():
+                raise serializers.ValidationError(
+                    code="player_already_transferred",
+                    detail={"player": [_("You have already transferred this player.")]}
+                )
+
             if not player.market_value or player.market_value > team.user.balance:
                 raise serializers.ValidationError(
                     code="insufficient_balance",
-                    detail={"player": [_("You do not have enough balance to buy this player!")]}
+                    detail={"player": [_("You do not have enough balance to buy this player.")]}
                 )
             try:
                 del attrs["swapped_player"]
             except KeyError:
                 pass
-
         elif transfer_type == TransferTypeChoices.SELL:
-            raise serializers.ValidationError("Not implemented!")
+            if not team.team_players.filter(player_id=player.id).exists():
+                raise serializers.ValidationError(
+                    code="team_player_doesnt_exists",
+                    detail={"player": [_("This player is not your team player.")]}
+                )
+            if not player.market_value:
+                raise serializers.ValidationError(
+                    code="no_market_value",
+                    detail={"player": [_("This player has no market value.")]}
+                )
+            try:
+                del attrs["swapped_player"]
+            except KeyError:
+                pass
         elif transfer_type == TransferTypeChoices.SWAP:
             raise serializers.ValidationError("Not implemented!")
         return attrs
