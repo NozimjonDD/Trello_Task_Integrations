@@ -381,7 +381,63 @@ def update_premierleague_status_by_players():
             {"API": "Invalid  data", "message": "Problem with API response"}
         )
 
-    pass
-
     count = 0
+    for player in players_data:
+        count = count + 1
 
+        models.PremierLeagueStatusByPlayer.objects.update_or_create(
+            remote_id=player["id"],
+            # code=player["code"],
+            defaults={
+                "code": player["code"],
+                "dreamteam_count": player["dreamteam_count"],
+                "in_dreamteam": player["in_dreamteam"],
+                "element_type": player["element_type"],
+                "ep_next": player["ep_next"],
+                "ep_this": player["ep_this"],
+                "form": player["form"],
+                "value_form": player["value_form"],
+                "selected_by_percent": player["selected_by_percent"],
+                "points_per_game": player["points_per_game"],
+                "now_cost": player["now_cost"],
+                "web_name": player["web_name"],
+                "first_name": player["first_name"],
+                "second_name": player["second_name"],
+                "special": player["special"],
+                "squad_number": player["squad_number"],
+                "status": player["status"],
+                "photo": player["photo"],
+                "photo_url": f"https://resources.premierleague.com/premierleague/photos/players/250x250/p{player['code']}.png",
+                "event_points": player["event_points"],
+                "team": player["team"],
+                "team_code": player["team_code"],
+                "total_points": player["total_points"],
+                "transfers_in": player["transfers_in"],
+                "transfers_out": player["transfers_out"],
+                "goals_scored": player["goals_scored"],
+                "clean_sheets": player["clean_sheets"],
+                "goals_conceded": player["goals_conceded"],
+                "own_goals": player["own_goals"],
+                "penalties_saved": player["penalties_saved"],
+                "penalties_missed": player["penalties_missed"],
+                "yellow_cards": player["yellow_cards"],
+                "red_cards": player["red_cards"],
+                "saves": player["saves"],
+                "bonus": player["bonus"],
+                "bps": player["bps"],
+                "influence_rank": player["influence_rank"],
+                "creativity_rank": player["creativity_rank"],
+                "threat_rank": player["threat_rank"],
+                "ict_index_rank": player["ict_index_rank"],
+                "now_cost_rank": player["now_cost_rank"],
+                "form_rank": player["form_rank"],
+                "selected_rank": player["selected_rank"],
+                "direct_freekicks_order": player["direct_freekicks_order"],
+                "penalties_order": player["penalties_order"],
+                "influence": player["influence"],
+                "threat": player["threat"],
+                "ict_index": player["ict_index"],
+                "expected_goals": player["expected_goals"],
+            }
+        )
+    return count
