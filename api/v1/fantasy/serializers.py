@@ -303,6 +303,8 @@ class TransferSerializer(serializers.ModelSerializer):
 
 
 class PublicLeagueListSerializer(serializers.ModelSerializer):
+    joined = serializers.BooleanField()
+
     class Meta:
         model = models.FantasyLeague
         fields = (
@@ -311,6 +313,7 @@ class PublicLeagueListSerializer(serializers.ModelSerializer):
             "description",
             "type",
             "status",
+            "joined",
             "created_at",
         )
 
@@ -401,6 +404,12 @@ class LeagueJoinSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     code="invite_code_invalid",
                     detail={"invite_code": [_("Invalid invite code entered.")]}
+                )
+
+            if models.LeagueParticipant.objects.filter(league_id=private_l.pk, team_id=team.pk).exists():
+                raise serializers.ValidationError(
+                    code="already_joined",
+                    detail={"invite_code": [_("You have already joined to this private league.")]}
                 )
             attrs["league"] = private_l
 

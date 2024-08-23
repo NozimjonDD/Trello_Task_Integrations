@@ -1,3 +1,4 @@
+from django.db.models import Exists, Q, OuterRef
 from rest_framework import generics, permissions
 
 from apps.fantasy import models
@@ -60,6 +61,18 @@ class PublicLeagueListAPIView(generics.ListAPIView):
     )
     serializer_class = serializers.PublicLeagueListSerializer
     permission_classes = [permissions.IsAuthenticated]
+    search_fields = (
+        "title",
+    )
+
+    def get_queryset(self):
+        qs = self.queryset.annotate(
+            joined=Exists(models.LeagueParticipant.objects.filter(
+                league_id=OuterRef("pk"),
+                team__user_id=self.request.user.pk,
+            ))
+        )
+        return qs
 
 
 class LeagueCreateAPIView(generics.CreateAPIView):
