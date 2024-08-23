@@ -10,4 +10,8 @@ urlpatterns = [
     ),
 
     path("transfer/", views.TransferAPIView.as_view(), name="player-transfer"),
+
+    path("league/public/", views.PublicLeagueListAPIView.as_view(), name="public-league-list"),
+    path("league/create/", views.LeagueCreateAPIView.as_view(), name="league-create"),
+    path("league/join/", views.LeagueJoinAPIView.as_view(), name="league-join"),
 ]

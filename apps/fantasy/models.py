@@ -1,9 +1,13 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from apps.common.data import LeagueStatusType, TeamStatusChoices, TransferTypeChoices
+from apps.common.data import (
+    LeagueStatusType, TeamStatusChoices, TransferTypeChoices, LeagueStatusChoices,
+    LeagueParticipantStatusChoices
+)
 from apps.common.models import BaseModel
 from apps.common import utils as common_utils
+from . import utils
 
 
 class Formation(BaseModel):
@@ -259,12 +263,27 @@ class FantasyLeague(BaseModel):
     title = models.CharField(verbose_name=_("Title"), max_length=255, null=True)
     description = models.TextField(verbose_name=_("Description"))
     type = models.CharField(verbose_name=_("Type"), choices=LeagueStatusType.choices, max_length=100)
-    invite_code = models.CharField(max_length=50, blank=True, null=True)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    status = models.CharField(
+        verbose_name=_("Status"),
+        max_length=50,
+        choices=LeagueStatusChoices.choices,
+        default=LeagueStatusChoices.PENDING,
+    )
+    invite_code = models.CharField(max_length=20, blank=True, null=True, unique=True)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if self.pk and self.type == LeagueStatusType.PRIVATE and not self.invite_code:
+            self.generate_new_invite_code()
+        super().save(*args, **kwargs)
+
+    def generate_new_invite_code(self):
+        self.invite_code = utils.generate_league_invite_code()
+        self.save(update_fields=["invite_code"])
 
 
 class LeagueParticipant(BaseModel):
@@ -272,6 +291,7 @@ class LeagueParticipant(BaseModel):
         db_table = "fantasy_league_participant"
         verbose_name = _("Fantasy league participant")
         verbose_name_plural = _("Fantasy league participant")
+        unique_together = ("league", "team",)
 
     league = models.ForeignKey(
         to="fantasy.FantasyLeague",
@@ -284,6 +304,13 @@ class LeagueParticipant(BaseModel):
         on_delete=models.CASCADE,
         related_name="league_participants",
         verbose_name=_("Team"),
+    )
+
+    status = models.CharField(
+        verbose_name=_("Status"),
+        max_length=50,
+        choices=LeagueParticipantStatusChoices.choices,
+        default=LeagueParticipantStatusChoices.ACTIVE,
     )
 
     def __str__(self):

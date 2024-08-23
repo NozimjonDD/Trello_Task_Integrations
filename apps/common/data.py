@@ -7,6 +7,18 @@ class LeagueStatusType(models.TextChoices):
     PRIVATE = 'private', 'Private',
 
 
+class LeagueStatusChoices(models.TextChoices):
+    PENDING = "pending", _("Pending")
+    ACTIVE = "active", _("Active")
+    INACTIVE = "inactive", _("Inactive")
+    SUSPENDED = "suspended", _("Suspended")
+
+
+class LeagueParticipantStatusChoices(models.TextChoices):
+    ACTIVE = "active", _("Active")
+    SUSPENDED = "suspended", _("Suspended")
+
+
 class TeamStatusChoices(models.TextChoices):
     ACTIVE = 'active', 'Active',
     INACTIVE = 'inactive', 'Inactive',

@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions
 
 from apps.fantasy import models
+from apps.common import data
+from api.v1 import permissions as api_permissions
 from . import serializers
 
 
@@ -48,3 +50,25 @@ class TransferAPIView(generics.CreateAPIView):
     model = models.Transfer
     serializer_class = serializers.TransferSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class PublicLeagueListAPIView(generics.ListAPIView):
+    queryset = models.FantasyLeague.objects.filter(
+        is_deleted=False,
+        type=data.LeagueStatusType.PUBLIC,
+        status=data.LeagueStatusChoices.ACTIVE,
+    )
+    serializer_class = serializers.PublicLeagueListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class LeagueCreateAPIView(generics.CreateAPIView):
+    model = models.FantasyLeague
+    permission_classes = [api_permissions.TeamCompleteUserPermission]
+    serializer_class = serializers.LeagueCreateSerializer
+
+
+class LeagueJoinAPIView(generics.CreateAPIView):
+    model = models.LeagueParticipant
+    permission_classes = [api_permissions.TeamCompleteUserPermission]
+    serializer_class = serializers.LeagueJoinSerializer

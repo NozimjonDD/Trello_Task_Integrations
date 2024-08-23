@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from apps.fantasy import models
 from apps.football import models as football_models
-from apps.common.data import TransferTypeChoices
+from apps.common.data import TransferTypeChoices, LeagueStatusType, LeagueStatusChoices
 
 from api.v1 import common_serializers
 
@@ -300,3 +300,118 @@ class TransferSerializer(serializers.ModelSerializer):
 
         instance.apply()
         return instance
+
+
+class PublicLeagueListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.FantasyLeague
+        fields = (
+            "id",
+            "title",
+            "description",
+            "type",
+            "status",
+            "created_at",
+        )
+
+
+class LeagueCreateSerializer(serializers.ModelSerializer):
+    type = serializers.ChoiceField(choices=[LeagueStatusType.PRIVATE])
+
+    class Meta:
+        model = models.FantasyLeague
+        fields = (
+            "id",
+            "title",
+            "type",
+            "description",
+            "status",
+            "invite_code",
+        )
+        extra_kwargs = {
+            "status": {"read_only": True},
+            "invite_code": {"read_only": True},
+            "title": {"required": True},
+        }
+
+    @transaction.atomic
+    def create(self, validated_data):
+        validated_data["owner"] = self.context["request"].user
+        instance = super().create(validated_data)
+        instance.generate_new_invite_code()
+
+        models.LeagueParticipant.objects.create(
+            league_id=instance.pk,
+            team_id=self.context["request"].user.team.pk,
+        )
+        return instance
+
+
+class LeagueJoinSerializer(serializers.ModelSerializer):
+    league_type = serializers.ChoiceField(choices=LeagueStatusType.choices, write_only=True)
+    league = serializers.PrimaryKeyRelatedField(
+        queryset=models.FantasyLeague.objects.filter(
+            is_deleted=False, type=LeagueStatusType.PUBLIC, status=LeagueStatusChoices.ACTIVE,
+        ),
+        required=False,
+        allow_null=True,
+    )
+    invite_code = serializers.CharField(required=False, allow_null=True, min_length=4, max_length=50, write_only=True)
+
+    class Meta:
+        model = models.LeagueParticipant
+        fields = (
+            "id",
+            "league_type",
+            "league",
+            "invite_code",
+        )
+
+    def validate(self, attrs):
+        league_type = attrs["league_type"]
+        league = attrs.get("league", None)
+        invite_code = attrs.get("invite_code", None)
+
+        team = self.context["request"].user.p_team
+
+        if league_type == LeagueStatusType.PUBLIC:
+            if not league:
+                raise serializers.ValidationError(
+                    code="league_required",
+                    detail={"league": [_("League is required to join a public league.")]}
+                )
+            if models.LeagueParticipant.objects.filter(league_id=league.pk, team_id=team.pk).exists():
+                raise serializers.ValidationError(
+                    code="already_joined",
+                    detail={"league": [_("You have already joined to this public league.")]}
+                )
+        elif league_type == LeagueStatusType.PRIVATE:
+            if not invite_code:
+                raise serializers.ValidationError(
+                    code="invite_code_required",
+                    detail={"invite_code": [_("Invite code is required to join a private league.")]}
+                )
+            try:
+                private_l = models.FantasyLeague.objects.get(
+                    type=LeagueStatusType.PRIVATE,
+                    status=LeagueStatusChoices.ACTIVE,
+                    invite_code=invite_code,
+                )
+            except models.FantasyLeague.DoesNotExist:
+                raise serializers.ValidationError(
+                    code="invite_code_invalid",
+                    detail={"invite_code": [_("Invalid invite code entered.")]}
+                )
+            attrs["league"] = private_l
+
+        try:
+            del attrs["invite_code"]
+        except KeyError:
+            pass
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        validated_data.pop("league_type")
+        validated_data["team"] = self.context["request"].user.p_team
+        return super().create(validated_data)
