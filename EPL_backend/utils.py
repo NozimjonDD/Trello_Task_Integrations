@@ -23,6 +23,7 @@ def _handle_auth_failed_error(exc, context):
             "status_code": response.status_code,
             "errors": [
                 {"error": "no_account_found",
+                 "error_field": None,
                  "message": str(exc)}
             ]
         }
@@ -45,9 +46,21 @@ def make_pretty_error(data, errors):
             for er in errors[error]:
                 make_pretty_error(data, {er: errors[error][er]})
         elif isinstance(errors[error], list) and isinstance(errors[error][0], ErrorDetail) and len(errors[error]) == 1:
-            data["errors"].append({"error": f"{error}_{errors[error][0].code}", "message": errors[error][0]})
+            data["errors"].append(
+                {
+                    "error": f"{error}_{errors[error][0].code}",
+                    "error_field": f"{error}",
+                    "message": errors[error][0]
+                }
+            )
         elif isinstance(errors[error][0], dict) and len(errors[error]) >= 1:
             for er in errors[error]:
                 make_pretty_error(data, er)
         else:
-            data["errors"].append({"error": f"{error}_{errors[error].code}", "message": errors[error]})
+            data["errors"].append(
+                {
+                    "error": f"{error}_{errors[error].code}",
+                    "error_field": f"{error}",
+                    "message": errors[error]
+                }
+            )
