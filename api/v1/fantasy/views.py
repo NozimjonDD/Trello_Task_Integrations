@@ -3,13 +3,13 @@ from rest_framework import generics, permissions
 
 from apps.fantasy import models
 from apps.common import data
-from api.v1 import permissions as api_permissions
+from api.v1 import permissions as api_permissions, common_serializers
 from . import serializers
 
 
 class FormationListAPIView(generics.ListAPIView):
     queryset = models.Formation.objects.filter(is_deleted=False)
-    serializer_class = serializers.FormationListSerializer
+    serializer_class = common_serializers.CommonFormationSerializer
     permission_classes = (permissions.IsAuthenticated,)
     search_fields = (
         "title",
