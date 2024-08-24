@@ -6,11 +6,13 @@ from . import serializers
 
 class UserRegisterAPIView(generics.CreateAPIView):
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
     serializer_class = serializers.UserRegisterSerializer
     queryset = models.User.objects.all()
 
 
 class UserRegisterConfirmAPIView(generics.CreateAPIView):
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
     serializer_class = serializers.UserRegisterConfirmSerializer
     queryset = models.User.objects.all()

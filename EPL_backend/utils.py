@@ -6,6 +6,7 @@ from rest_framework.views import exception_handler
 def custom_exception_handler(exc, context):
     handlers = {
         "AuthenticationFailed": _handle_auth_failed_error,
+        "InvalidToken": _handle_invalid_token_error,
         "ValidationError": _handle_validation_error,
     }
     response = exception_handler(exc, context)
@@ -25,6 +26,20 @@ def _handle_auth_failed_error(exc, context):
                 {"error": "no_account_found",
                  "error_field": None,
                  "message": str(exc)}
+            ]
+        }
+    return response
+
+
+def _handle_invalid_token_error(exc, context):
+    response = exception_handler(exc, context)
+    if response is not None:
+        response.data = {
+            "status_code": response.status_code,
+            "errors": [
+                {"error": "token_not_valid",
+                 "error_field": None,
+                 "message": str(exc.detail["messages"][0]["message"])}
             ]
         }
     return response
