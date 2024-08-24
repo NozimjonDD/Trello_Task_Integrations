@@ -216,7 +216,7 @@ SIMPLE_JWT = {
     "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
 }
 
-OTP_EXPIRATION_TIME = 120  # seconds
+OTP_EXPIRATION_TIME = 300  # seconds
 
 # SPORTMONKS
 SPORTMONKS_APIKEY = os.environ.get("SPORTMONKS_APIKEY", default="dummy")
