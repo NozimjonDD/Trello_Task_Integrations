@@ -23,6 +23,7 @@ class PlayerListSerializer(serializers.ModelSerializer):
 
             "club",
             "position",
+            "jersey_number",
 
             "height",
             "weight",
@@ -55,6 +56,7 @@ class PlayerDetailSerializer(serializers.ModelSerializer):
 
             "club",
             "position",
+            "jersey_number",
 
             "date_of_birth",
             "age",

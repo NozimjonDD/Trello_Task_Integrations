@@ -51,10 +51,10 @@ def update_players_action(model_admin, request, queryset):
     model_admin.message_user(request, _("Players update task started!"))
 
 
-@admin.action(description=_("Update positions"))
-def update_positions_action(model_admin, request, queryset):
-    utils.update_positions()
-    model_admin.message_user(request, _("Positions updated!"))
+@admin.action(description=_("Update types(positions included)"))
+def update_types_action(model_admin, request, queryset):
+    utils.update_types()
+    model_admin.message_user(request, _("Types(positions included) updated!"))
 
 
 @admin.action(description=_("Update fixture states"))

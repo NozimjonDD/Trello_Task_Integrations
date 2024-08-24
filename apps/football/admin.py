@@ -53,10 +53,18 @@ class FixtureStateAdmin(admin.ModelAdmin):
 
 @admin.register(models.Fixture)
 class FixtureAdmin(admin.ModelAdmin):
-    list_display = ("title", "season", "round", "state", "result_info", "match_date", "id",)
+    list_display = (
+        "title", "result_score", "season", "round", "state", "result_info", "match_date", "id",)
     list_display_links = ("title", "id",)
     search_fields = ("title", "season__name", "round__name", "state__title", "remote_id", "id",)
     autocomplete_fields = ("season", "round", "state", "home_club", "away_club",)
+
+    def result_score(self, obj):
+        if obj.home_club_score and obj.away_club_score:
+            return f"{obj.home_club_score}:{obj.away_club_score}"
+        return "-:-"
+
+    result_score.short_description = _("Result score")
 
 
 @admin.register(models.Club)
@@ -77,12 +85,20 @@ class ClubAdmin(admin.ModelAdmin):
     logo_html.short_description = _("Logo")
 
 
+@admin.register(models.SportMonksType)
+class SportMonksTypeAdmin(admin.ModelAdmin):
+    list_display = ("name", "model_type", "code", "developer_name", "remote_id", "id",)
+    list_display_links = ("name", "id",)
+    search_fields = ("name", "model_type", "code", "developer_name", "id", "remote_id",)
+    actions = (actions.update_types_action,)
+
+
 @admin.register(models.Position)
 class PositionAdmin(admin.ModelAdmin):
     list_display = ("name", "short_name", "code", "id",)
     list_display_links = ("name", "id",)
     search_fields = ("name", "short_name", "code", "id", "remote_id",)
-    actions = (actions.update_positions_action,)
+    actions = (actions.update_types_action,)
 
 
 @admin.register(models.Player)
@@ -139,7 +155,7 @@ class PremierLeagueStatusByPlayerAdmin(admin.ModelAdmin):
                     "web_name", "total_points", "selected_by_percent", "goals_scored", "team", "threat",
                     "own_goals", "penalties_saved", "bonus",)
 
-    search_fields = ("web_name", "first_name", "second_name", )
+    search_fields = ("web_name", "first_name", "second_name",)
 
     def image_tag(self, obj):
         if obj.photo_url:

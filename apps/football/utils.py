@@ -4,7 +4,8 @@ from rest_framework import serializers
 from . import service, models
 
 
-def update_positions():
+def update_types():
+    """ Update sportmonks types & positions. """
     page = 1
     has_more = True
 
@@ -23,16 +24,24 @@ def update_positions():
 
             for type_ in types_data:
 
-                if not type_["model_type"] == "position":
-                    continue
-
-                models.Position.objects.update_or_create(
-                    remote_id=type_["id"],
-                    defaults={
-                        "name": type_["name"],
-                        "code": type_["code"],
-                    }
-                )
+                if type_["model_type"] == "position":
+                    models.Position.objects.update_or_create(
+                        remote_id=type_["id"],
+                        defaults={
+                            "name": type_["name"],
+                            "code": type_["code"],
+                        }
+                    )
+                else:
+                    models.SportMonksType.objects.update_or_create(
+                        remote_id=type_["id"],
+                        defaults={
+                            "name": type_["name"],
+                            "code": type_["code"],
+                            "model_type": type_["model_type"],
+                            "developer_name": type_["developer_name"],
+                        }
+                    )
 
         has_more = resp_data["pagination"]["has_more"]
         page += 1
@@ -200,12 +209,21 @@ def update_fixtures_by_season(season_id):
             for fixture in fixtures_data:
                 home_club = None
                 away_club = None
+                home_score = None
+                away_score = None
 
                 for p in fixture["participants"]:
                     if p["meta"]["location"] == "home":
                         home_club = models.Club.objects.get(remote_id=p["id"])
                     elif p["meta"]["location"] == "away":
                         away_club = models.Club.objects.get(remote_id=p["id"])
+
+                for score in fixture["scores"]:
+                    if score["description"] == "CURRENT":
+                        if score["participant_id"] == home_club.remote_id:
+                            home_score = score["score"]["goals"]
+                        elif score["participant_id"] == away_club.remote_id:
+                            away_score = score["score"]["goals"]
 
                 models.Fixture.objects.update_or_create(
                     remote_id=fixture["id"],
@@ -214,6 +232,8 @@ def update_fixtures_by_season(season_id):
                         "round": models.Round.objects.get(remote_id=fixture["round_id"]),
                         "home_club": home_club,
                         "away_club": away_club,
+                        "home_club_score": home_score,
+                        "away_club_score": away_score,
                         "title": fixture["name"],
                         "venue_id": fixture["venue_id"],
                         "state": models.FixtureState.objects.get(remote_id=fixture["state_id"]),
@@ -258,7 +278,12 @@ def update_clubs_by_season(season_id):
                 })
 
             for player in players_data:
-                plyer = models.Player.objects.get(remote_id=player["player_id"])
+
+                try:
+                    plyer = models.Player.objects.get(remote_id=player["player_id"])
+                except models.Player.DoesNotExist:
+                    continue
+
                 models.ClubPlayer.objects.update_or_create(
                     remote_id=player["id"],
                     defaults={
@@ -277,8 +302,9 @@ def update_clubs_by_season(season_id):
                 )
 
                 plyer.club = club
+                plyer.jersey_number = player["jersey_number"]
                 plyer.club_contract_until = player["end"]
-                plyer.save(update_fields=["club", "club_contract_until"])
+                plyer.save(update_fields=["club", "club_contract_until", "jersey_number"])
 
 
 def update_club_details(club_id):
@@ -329,7 +355,8 @@ def update_club_details(club_id):
 
             plyer.club = club
             plyer.club_contract_until = player["end"]
-            plyer.save(update_fields=["club", "club_contract_until"])
+            plyer.jersey_number = player["jersey_number"]
+            plyer.save(update_fields=["club", "club_contract_until", "jersey_number"])
 
 
 def update_players():

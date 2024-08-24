@@ -12,6 +12,21 @@ class FootballBaseModel(BaseModel):
     remote_id = models.PositiveIntegerField(verbose_name=_("remote id"), unique=True)
 
 
+class SportMonksType(FootballBaseModel):
+    class Meta:
+        db_table = "sportmonks_type"
+        verbose_name = _("SportMonks Type")
+        verbose_name_plural = _("SportMonks Types")
+
+    name = models.CharField(max_length=200, verbose_name=_("Name"))
+    code = models.CharField(max_length=100, verbose_name=_("Code"))
+    developer_name = models.CharField(max_length=100, verbose_name=_("Developer name"))
+    model_type = models.CharField(max_length=100, verbose_name=_("Model type"))
+
+    def __str__(self):
+        return self.name
+
+
 class League(FootballBaseModel):
     class Meta:
         db_table = "league"
@@ -193,6 +208,7 @@ class Player(FootballBaseModel):
     weight = models.IntegerField(null=True, blank=True)
 
     club_contract_until = models.DateField(null=True, blank=True)
+    jersey_number = models.IntegerField(verbose_name=_("Jersey number"), null=True, blank=True)
     market_value = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
@@ -237,7 +253,6 @@ class ClubPlayer(FootballBaseModel):
 
 
 class PremierLeagueStatusByPlayer(FootballBaseModel):
-
     """ PremierLeague Player Statistics """
 
     class Meta:
