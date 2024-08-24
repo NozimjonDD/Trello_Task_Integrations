@@ -55,6 +55,10 @@ class Formation(BaseModel):
                     ordering=i,
                 )
 
+    @property
+    def scheme_as_list(self):
+        return [int(i) for i in self.scheme.split("-")]
+
 
 class FormationPosition(BaseModel):
     class Meta:
@@ -270,8 +274,22 @@ class FantasyLeague(BaseModel):
         default=LeagueStatusChoices.PENDING,
     )
     invite_code = models.CharField(max_length=20, blank=True, null=True, unique=True)
-    start_time = models.DateTimeField(null=True, blank=True)
-    end_time = models.DateTimeField(null=True, blank=True)
+    starting_round = models.ForeignKey(
+        to="football.Round",
+        verbose_name=_("Starting round"),
+        on_delete=models.SET_NULL,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
+    ending_round = models.ForeignKey(
+        to="football.Round",
+        verbose_name=_("Ending round"),
+        on_delete=models.SET_NULL,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return self.title

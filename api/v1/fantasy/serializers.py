@@ -329,12 +329,16 @@ class LeagueCreateSerializer(serializers.ModelSerializer):
             "type",
             "description",
             "status",
+            "starting_round",
+            "ending_round",
             "invite_code",
         )
         extra_kwargs = {
             "status": {"read_only": True},
             "invite_code": {"read_only": True},
             "title": {"required": True},
+            "starting_round": {"required": True, "allow_null": False},
+            "ending_round": {"required": True, "allow_null": False},
         }
 
     @transaction.atomic

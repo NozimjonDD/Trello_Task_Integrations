@@ -30,11 +30,14 @@ class CommonClubSerializer(serializers.ModelSerializer):
 
 
 class CommonFormationSerializer(serializers.ModelSerializer):
+    scheme = serializers.ListField(source="scheme_as_list")
+
     class Meta:
         model = fantasy_models.Formation
         fields = (
             "id",
             "title",
+            "scheme",
         )
 
 
