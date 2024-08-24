@@ -94,6 +94,21 @@ class User(AbstractUser, BaseModel):
     def pretty_balance(self):
         return common_utils.pretty_price(self.balance)
 
+    def generate_refresh_token(self):
+        from rest_framework_simplejwt.tokens import RefreshToken
+        from rest_framework_simplejwt.settings import api_settings
+        from django.contrib.auth.models import update_last_login
+
+        refresh = RefreshToken.for_user(self)
+        data = dict()
+        data["refresh"] = str(refresh)
+        data["access"] = str(refresh.access_token)
+
+        if api_settings.UPDATE_LAST_LOGIN:
+            update_last_login(None, self)
+
+        return data
+
 
 class AccountSettings(BaseModel):
     class Meta:
