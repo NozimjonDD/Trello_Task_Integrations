@@ -98,3 +98,23 @@ class RoundListSerializer(serializers.ModelSerializer):
             "starting_at",
             "ending_at",
         )
+
+
+class FixtureListSerializer(serializers.ModelSerializer):
+    home_club = common_serializers.CommonClubSerializer()
+    away_club = common_serializers.CommonClubSerializer()
+    state = common_serializers.CommonFixtureStateSerializer()
+
+    class Meta:
+        model = models.Fixture
+        fields = (
+            "id",
+            "title",
+            "round",
+            "home_club",
+            "away_club",
+            "home_club_score",
+            "away_club_score",
+            "state",
+            "match_date",
+        )

@@ -47,8 +47,8 @@ class RoundAdmin(admin.ModelAdmin):
 
 @admin.register(models.FixtureState)
 class FixtureStateAdmin(admin.ModelAdmin):
-    list_display = ("state", "title", "short_title", "id",)
-    list_display_links = ("state", "id",)
+    list_display = ("title", "short_title", "state", "id",)
+    list_display_links = ("title", "id",)
     search_fields = ("state", "title", "short_title", "id", "remote_id",)
     actions = (actions.update_fixture_states_action,)
 

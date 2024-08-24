@@ -72,3 +72,13 @@ class CommonPlayerSerializer(serializers.ModelSerializer):
 
             "market_value",
         )
+
+
+class CommonFixtureStateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = football_models.FixtureState
+        fields = (
+            "id",
+            "state",
+            "title",
+        )

@@ -11,5 +11,6 @@ urlpatterns = [
 
     path("club/", views.ClubListAPIView.as_view(), name="club-list"),
     path("round/", views.RoundListAPIView.as_view(), name="round-list"),
+    path("fixture/", views.FixtureListAPIView.as_view(), name="fixture-list"),
 
 ]

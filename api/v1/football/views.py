@@ -4,7 +4,7 @@ from rest_framework import generics, permissions
 from rest_framework import views
 from rest_framework.response import Response
 from apps.football.utils import update_premierleague_status_by_players
-from . import serializers
+from . import serializers, filtersets
 from apps.football import models
 
 
@@ -61,3 +61,22 @@ class RoundListAPIView(generics.ListAPIView):
     def get_queryset(self):
         qs = self.queryset
         return qs.order_by("starting_at", )
+
+
+class FixtureListAPIView(generics.ListAPIView):
+    queryset = models.Fixture.objects.filter(
+        is_deleted=False, season__league__remote_id=settings.PREMIER_LEAGUE_ID
+    )
+    serializer_class = serializers.FixtureListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    search_fields = (
+        "title",
+        "home_club__name",
+        "away_club__name",
+    )
+    filterset_class = filtersets.FixtureListFilter
+    ordering_fields = ("match_date",)
+
+    def get_queryset(self):
+        qs = self.queryset.select_related("home_club", "away_club", "state", )
+        return qs
