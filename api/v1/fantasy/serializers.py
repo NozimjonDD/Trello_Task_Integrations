@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.conf import settings
+
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -197,7 +199,10 @@ class SquadDetailUpdateSerializer(serializers.ModelSerializer):
 
 class TransferSerializer(serializers.ModelSerializer):
     player = serializers.PrimaryKeyRelatedField(
-        queryset=football_models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
+        queryset=football_models.Player.objects.filter(
+            is_deleted=False,
+            club__league__remote_id=settings.PREMIER_LEAGUE_ID,
+        )
     )
     squad_player = serializers.PrimaryKeyRelatedField(
         queryset=models.SquadPlayer.objects.filter(
@@ -320,6 +325,20 @@ class PublicLeagueListSerializer(serializers.ModelSerializer):
 
 class LeagueCreateSerializer(serializers.ModelSerializer):
     type = serializers.ChoiceField(choices=[LeagueStatusType.PRIVATE])
+    starting_round = serializers.PrimaryKeyRelatedField(
+        queryset=football_models.Round.objects.filter(
+            is_deleted=False,
+            is_finished=False,
+            season__league_id=settings.PREMIER_LEAGUE_ID,
+        )
+    )
+    ending_round = serializers.PrimaryKeyRelatedField(
+        queryset=football_models.Round.objects.filter(
+            is_deleted=False,
+            is_finished=False,
+            season__league_id=settings.PREMIER_LEAGUE_ID,
+        )
+    )
 
     class Meta:
         model = models.FantasyLeague
@@ -337,8 +356,6 @@ class LeagueCreateSerializer(serializers.ModelSerializer):
             "status": {"read_only": True},
             "invite_code": {"read_only": True},
             "title": {"required": True},
-            "starting_round": {"required": True, "allow_null": False},
-            "ending_round": {"required": True, "allow_null": False},
         }
 
     @transaction.atomic

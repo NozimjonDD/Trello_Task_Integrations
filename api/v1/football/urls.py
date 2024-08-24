@@ -10,5 +10,6 @@ urlpatterns = [
     path("player-stat/", views.UpdatePremierLeagueStat.as_view(), name="premier-league-player-statics"),
 
     path("club/", views.ClubListAPIView.as_view(), name="club-list"),
+    path("round/", views.RoundListAPIView.as_view(), name="round-list"),
 
 ]

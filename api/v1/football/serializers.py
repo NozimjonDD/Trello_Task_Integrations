@@ -85,3 +85,16 @@ class ClubListSerializer(serializers.ModelSerializer):
             "short_name",
             "logo",
         )
+
+
+class RoundListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Round
+        fields = (
+            "id",
+            "name",
+            "is_finished",
+            "is_current",
+            "starting_at",
+            "ending_at",
+        )

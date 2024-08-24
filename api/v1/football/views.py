@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from rest_framework import generics, permissions
 from rest_framework import views
 from rest_framework.response import Response
@@ -7,7 +9,7 @@ from apps.football import models
 
 
 class PlayerListAPIView(generics.ListAPIView):
-    queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
+    queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=settings.PREMIER_LEAGUE_ID)
     serializer_class = serializers.PlayerListSerializer
     permission_classes = [permissions.IsAuthenticated]
     search_fields = ("first_name", "last_name", "common_name", "full_name",)
@@ -28,7 +30,7 @@ class PlayerListAPIView(generics.ListAPIView):
 
 
 class PlayerDetailAPIView(generics.RetrieveAPIView):
-    queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
+    queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=settings.PREMIER_LEAGUE_ID)
     serializer_class = serializers.PlayerDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -41,7 +43,21 @@ class UpdatePremierLeagueStat(views.APIView):
 
 
 class ClubListAPIView(generics.ListAPIView):
-    queryset = models.Club.objects.filter(is_deleted=False, league__remote_id=271)
+    queryset = models.Club.objects.filter(is_deleted=False, league__remote_id=settings.PREMIER_LEAGUE_ID)
     serializer_class = serializers.ClubListSerializer
     permission_classes = [permissions.IsAuthenticated]
     search_fields = ("name", "short_name",)
+
+
+class RoundListAPIView(generics.ListAPIView):
+    queryset = models.Round.objects.filter(is_deleted=False, league__remote_id=settings.PREMIER_LEAGUE_ID)
+    serializer_class = serializers.RoundListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    search_fields = (
+        "name",
+    )
+    pagination_class = None
+
+    def get_queryset(self):
+        qs = self.queryset
+        return qs.order_by("starting_at", )
