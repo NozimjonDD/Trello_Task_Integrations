@@ -71,6 +71,7 @@ class CommonPlayerSerializer(serializers.ModelSerializer):
             "position",
 
             "market_value",
+            "pretty_market_value",
         )
 
 

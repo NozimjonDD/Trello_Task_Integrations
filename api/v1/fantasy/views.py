@@ -1,5 +1,6 @@
 from django.db.models import Exists, Q, OuterRef
 from rest_framework import generics, permissions
+from rest_framework.permissions import AllowAny
 
 from apps.fantasy import models
 from apps.common import data
