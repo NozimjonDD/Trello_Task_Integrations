@@ -314,3 +314,8 @@ class PremierLeagueStatusByPlayer(FootballBaseModel):
 
     def __str__(self):
         return f"{self.code} - {self.web_name}"
+
+
+class CommonPlayer(BaseModel):
+    fantasy_player = models.ForeignKey(to="PremierLeagueStatusByPlayer", on_delete=models.CASCADE, related_name="fantasy_player")
+    sportmonks_player = models.ForeignKey(to="Player", on_delete=models.CASCADE, related_name="sportmonks_player")

@@ -166,3 +166,9 @@ class PremierLeagueStatusByPlayerAdmin(admin.ModelAdmin):
         return None
 
     image_tag.short_description = _("Profile picture")
+
+
+@admin.register(models.CommonPlayer)
+class CommonPlayerAdmin(admin.ModelAdmin):
+    list_display = ("fantasy_player", "sportmonks_player")
+    autocomplete_fields = ("sportmonks_player", "fantasy_player",)
