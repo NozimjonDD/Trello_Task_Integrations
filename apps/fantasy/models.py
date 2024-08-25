@@ -250,7 +250,14 @@ class Transfer(BaseModel):
                 pass
 
         elif self.transfer_type == TransferTypeChoices.SWAP:
-            pass
+            self.team.user.balance -= self.fee
+
+            try:
+                team_player = TeamPlayer.objects.get(team_id=self.team_id, player_id=self.player_id)
+                team_player.player = self.swapped_player
+                team_player.save(update_fields=["player"])
+            except TeamPlayer.DoesNotExist:
+                pass
 
         self.team.user.save(update_fields=["balance"])
 

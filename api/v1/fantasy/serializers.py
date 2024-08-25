@@ -206,7 +206,7 @@ class TransferSerializer(serializers.ModelSerializer):
     )
     squad_player = serializers.PrimaryKeyRelatedField(
         queryset=models.SquadPlayer.objects.filter(
-            is_deleted=False, player=None, squad__is_default=True
+            is_deleted=False, squad__is_default=True
         ),
         required=False,
         allow_null=True,
@@ -297,10 +297,22 @@ class TransferSerializer(serializers.ModelSerializer):
             except KeyError:
                 pass
         elif transfer_type == TransferTypeChoices.SWAP:
-            if not team.team_players.filter(player_id=swapped_player.id).exists():
+            if not team.team_players.filter(player_id=player.id).exists():
                 raise serializers.ValidationError(
                     code="team_player_doesnt_exists",
                     detail={"player": [_("This player is not your team player.")]}
+                )
+            
+            if team.team_players.filter(player_id=swapped_player.id).exists():
+                raise serializers.ValidationError(
+                    code="already_exists",
+                    detail={"swapped_player": [_("This player is already in your team.")]}
+                )
+            
+            if not swapped_player.market_value or swapped_player.market_value - player.market_value > team.user.balance:
+                raise serializers.ValidationError(
+                    code="insufficient_balance",
+                    detail={"swapped_player": [_("You do not have enough balance to buy this player.")]}
                 )
         return attrs
 
@@ -314,7 +326,7 @@ class TransferSerializer(serializers.ModelSerializer):
         if transfer_type in [TransferTypeChoices.BUY, TransferTypeChoices.SELL]:
             validated_data["fee"] = validated_data["player"].market_value
         elif transfer_type == TransferTypeChoices.SWAP:
-            validated_data["swapped_player"] = validated_data["swapped_player"]
+            validated_data["fee"] = validated_data["swapped_player"].market_value - validated_data["player"].market_value
 
         instance = super().create(validated_data)
 
