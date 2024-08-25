@@ -253,8 +253,8 @@ class Transfer(BaseModel):
             self.team.user.balance -= self.fee
 
             try:
-                team_player = TeamPlayer.objects.get(team_id=self.team_id, player_id=self.player_id)
-                team_player.player = self.swapped_player
+                team_player = TeamPlayer.objects.get(team_id=self.team_id, player_id=self.swapped_player_id)
+                team_player.player = self.player
                 team_player.save(update_fields=["player"])
             except TeamPlayer.DoesNotExist:
                 pass

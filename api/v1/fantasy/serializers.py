@@ -297,22 +297,27 @@ class TransferSerializer(serializers.ModelSerializer):
             except KeyError:
                 pass
         elif transfer_type == TransferTypeChoices.SWAP:
-            if not team.team_players.filter(player_id=player.id).exists():
+            if not swapped_player:
+                raise serializers.ValidationError(
+                    code="required",
+                    detail={"swapped_player": [_("This field is required.")]}
+                )
+            if not team.team_players.filter(player_id=swapped_player.id).exists():
                 raise serializers.ValidationError(
                     code="team_player_doesnt_exists",
-                    detail={"player": [_("This player is not your team player.")]}
+                    detail={"swapped_player": [_("This player is not your team player.")]}
                 )
             
-            if team.team_players.filter(player_id=swapped_player.id).exists():
+            if team.team_players.filter(player_id=player.id).exists():
                 raise serializers.ValidationError(
                     code="already_exists",
-                    detail={"swapped_player": [_("This player is already in your team.")]}
+                    detail={"player": [_("This player is already in your team.")]}
                 )
             
-            if not swapped_player.market_value or swapped_player.market_value - player.market_value > team.user.balance:
+            if not player.market_value or player.market_value - swapped_player.market_value > team.user.balance:
                 raise serializers.ValidationError(
                     code="insufficient_balance",
-                    detail={"swapped_player": [_("You do not have enough balance to buy this player.")]}
+                    detail={"player": [_("You do not have enough balance to buy this player.")]}
                 )
         return attrs
 
@@ -326,7 +331,7 @@ class TransferSerializer(serializers.ModelSerializer):
         if transfer_type in [TransferTypeChoices.BUY, TransferTypeChoices.SELL]:
             validated_data["fee"] = validated_data["player"].market_value
         elif transfer_type == TransferTypeChoices.SWAP:
-            validated_data["fee"] = validated_data["swapped_player"].market_value - validated_data["player"].market_value
+            validated_data["fee"] = validated_data["player"].market_value - validated_data["swapped_player"].market_value
 
         instance = super().create(validated_data)
 
