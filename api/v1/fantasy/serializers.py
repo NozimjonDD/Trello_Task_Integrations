@@ -211,6 +211,12 @@ class TransferSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    swapped_player = serializers.PrimaryKeyRelatedField(
+        queryset=football_models.Player.objects.filter(
+            is_deleted=False,
+            club__league__remote_id=settings.PREMIER_LEAGUE_ID,
+        )
+    )
 
     class Meta:
         model = models.Transfer
@@ -289,7 +295,11 @@ class TransferSerializer(serializers.ModelSerializer):
             except KeyError:
                 pass
         elif transfer_type == TransferTypeChoices.SWAP:
-            raise serializers.ValidationError("Not implemented!")
+            if not team.team_players.filter(player_id=swapped_player.id).exists():
+                raise serializers.ValidationError(
+                    code="team_player_doesnt_exists",
+                    detail={"player": [_("This player is not your team player.")]}
+                )
         return attrs
 
     @transaction.atomic
@@ -301,6 +311,9 @@ class TransferSerializer(serializers.ModelSerializer):
         validated_data["fee"] = 0
         if transfer_type in [TransferTypeChoices.BUY, TransferTypeChoices.SELL]:
             validated_data["fee"] = validated_data["player"].market_value
+        elif transfer_type == TransferTypeChoices.SWAP:
+            validated_data["swapped_player"] = validated_data["swapped_player"]
+
         instance = super().create(validated_data)
 
         instance.apply()
