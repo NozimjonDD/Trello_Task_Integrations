@@ -215,7 +215,9 @@ class TransferSerializer(serializers.ModelSerializer):
         queryset=football_models.Player.objects.filter(
             is_deleted=False,
             club__league__remote_id=settings.PREMIER_LEAGUE_ID,
-        )
+        ),
+        required=False,
+        allow_null=True,
     )
 
     class Meta:
