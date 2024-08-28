@@ -125,6 +125,7 @@ class PlayerAdmin(admin.ModelAdmin):
         "id",
     )
     list_display_links = ("first_name", "id",)
+    list_filter = ("club", "position",)
     search_fields = ("first_name", "last_name", "common_name", "club__name", "position__name",)
     autocomplete_fields = ("club", "position",)
 

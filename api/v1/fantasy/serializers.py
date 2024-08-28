@@ -11,22 +11,6 @@ from apps.common.data import TransferTypeChoices, LeagueStatusType, LeagueStatus
 from api.v1 import common_serializers
 
 
-class _FormationPositionSerializer(serializers.ModelSerializer):
-    position__id = serializers.IntegerField(source="position.pk")
-    position__name = serializers.StringRelatedField(source="position.name")
-    position__short_name = serializers.StringRelatedField(source="position.short_name")
-
-    class Meta:
-        model = models.FormationPosition
-        fields = (
-            "id",
-            "index",
-            "position__id",
-            "position__name",
-            "position__short_name",
-        )
-
-
 class FormationListSerializer(serializers.ModelSerializer):
     # positions = _FormationPositionSerializer(many=True)
 
@@ -130,7 +114,7 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
     def get_squad_players(obj):
         squad_players = obj.players.filter(
             is_substitution=False
-        ).exclude(position__position__short_name="GK").order_by("position__ordering")
+        ).exclude(position__position__short_name="GK").order_by("position__position__remote_id", "position__ordering")
 
         squad_players = list(squad_players)
 
@@ -159,7 +143,7 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
     def get_substitutes(obj):
         substitutes = obj.players.filter(
             is_substitution=True
-        ).order_by("position__ordering")
+        ).order_by("position__position__remote_id", "position__ordering")
         return _DefaultSquadPlayerSerializer(substitutes, many=True).data
 
 
@@ -195,6 +179,59 @@ class SquadDetailUpdateSerializer(serializers.ModelSerializer):
             "is_default": {"read_only": True},
             "formation": {"required": True},
         }
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+
+        scheme = instance.formation.scheme
+
+        squad_players = instance.players.filter(
+            is_substitution=False
+        ).exclude(position__position__short_name="GK").order_by("position__ordering")
+
+        squad_players = list(squad_players)
+
+        cnt = 0
+        for index, i in enumerate(scheme.split("-")):
+            for j in range(int(i)):
+                if index == 0:
+                    if squad_players[cnt].position.position.short_name != "DF":
+                        swap_squad_player = instance.players.filter(
+                            is_substitution=True,
+                            position__position__short_name="DF"
+                        ).order_by("position__ordering").first()
+
+                        swap_squad_player.is_substitution = False
+                        squad_players[cnt].is_substitution = True
+                        squad_players[cnt].save(update_fields=["is_substitution"])
+                        swap_squad_player.save(update_fields=["is_substitution"])
+
+                elif index == 1:                    
+                    if squad_players[cnt].position.position.short_name != "MF":
+                        swap_squad_player = instance.players.filter(
+                            is_substitution=True,
+                            position__position__short_name="MF"
+                        ).order_by("position__ordering").first()
+
+                        swap_squad_player.is_substitution = False
+                        squad_players[cnt].is_substitution = True
+                        squad_players[cnt].save(update_fields=["is_substitution"])
+                        swap_squad_player.save(update_fields=["is_substitution"])
+                elif index in [2, 3]:
+                    if squad_players[cnt].position.position.short_name != "ATK":
+                        swap_squad_player = instance.players.filter(
+                            is_substitution=True,
+                            position__position__short_name="ATK"
+                        ).order_by("position__ordering").first()
+
+                        swap_squad_player.is_substitution = False
+                        squad_players[cnt].is_substitution = True
+                        squad_players[cnt].save(update_fields=["is_substitution"])
+                        swap_squad_player.save(update_fields=["is_substitution"])
+                cnt += 1
+
+        return instance
 
 
 class TransferSerializer(serializers.ModelSerializer):
@@ -312,6 +349,12 @@ class TransferSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     code="already_exists",
                     detail={"player": [_("This player is already in your team.")]}
+                )
+            
+            if player.club_id != swapped_player.club_id and team.team_players.filter(player__club_id=player.club.id).count() >= 3:
+                raise serializers.ValidationError(
+                    code="club_limit_reached",
+                    detail={"player": [_("You can transfer upto 3 players from one club.")]}
                 )
             
             if not player.market_value or player.market_value - swapped_player.market_value > team.user.balance:
