@@ -313,6 +313,8 @@ class PremierLeagueStatusByPlayer(FootballBaseModel):
     expected_goals = models.CharField(max_length=255, null=True)
 
     def __str__(self):
+        if self.first_name and self.second_name:
+            return f"{self.first_name} - {self.second_name}"
         return f"{self.code} - {self.web_name}"
 
 
