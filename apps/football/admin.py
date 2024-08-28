@@ -137,7 +137,8 @@ class PlayerAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request).select_related("club", "position", )
-        qs = qs.filter(club__league__remote_id=settings.PREMIER_LEAGUE_ID)
+        if qs.filter(club__league__remote_id=settings.PREMIER_LEAGUE_ID).exists():
+            qs = qs.filter(club__league__remote_id=settings.PREMIER_LEAGUE_ID)
         return qs
 
 
