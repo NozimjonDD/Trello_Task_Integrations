@@ -360,7 +360,7 @@ def update_club_details(club_id):
 
 
 def update_players():
-    page = 1
+    page = 1000
     has_more = True
 
     while has_more:

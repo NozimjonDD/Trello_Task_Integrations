@@ -188,7 +188,7 @@ class SquadDetailUpdateSerializer(serializers.ModelSerializer):
 
         squad_players = instance.players.filter(
             is_substitution=False
-        ).exclude(position__position__short_name="GK").order_by("position__ordering")
+        ).exclude(position__position__short_name="GK").order_by("position__position__remote_id", "position__ordering")
 
         squad_players = list(squad_players)
 
@@ -207,7 +207,7 @@ class SquadDetailUpdateSerializer(serializers.ModelSerializer):
                         squad_players[cnt].save(update_fields=["is_substitution"])
                         swap_squad_player.save(update_fields=["is_substitution"])
 
-                elif index == 1:                    
+                elif index == 1:
                     if squad_players[cnt].position.position.short_name != "MF":
                         swap_squad_player = instance.players.filter(
                             is_substitution=True,
@@ -344,19 +344,20 @@ class TransferSerializer(serializers.ModelSerializer):
                     code="team_player_doesnt_exists",
                     detail={"swapped_player": [_("This player is not your team player.")]}
                 )
-            
+
             if team.team_players.filter(player_id=player.id).exists():
                 raise serializers.ValidationError(
                     code="already_exists",
                     detail={"player": [_("This player is already in your team.")]}
                 )
-            
-            if player.club_id != swapped_player.club_id and team.team_players.filter(player__club_id=player.club.id).count() >= 3:
+
+            if player.club_id != swapped_player.club_id and team.team_players.filter(
+                    player__club_id=player.club.id).count() >= 3:
                 raise serializers.ValidationError(
                     code="club_limit_reached",
                     detail={"player": [_("You can transfer upto 3 players from one club.")]}
                 )
-            
+
             if not player.market_value or player.market_value - swapped_player.market_value > team.user.balance:
                 raise serializers.ValidationError(
                     code="insufficient_balance",
@@ -374,7 +375,8 @@ class TransferSerializer(serializers.ModelSerializer):
         if transfer_type in [TransferTypeChoices.BUY, TransferTypeChoices.SELL]:
             validated_data["fee"] = validated_data["player"].market_value
         elif transfer_type == TransferTypeChoices.SWAP:
-            validated_data["fee"] = validated_data["player"].market_value - validated_data["swapped_player"].market_value
+            validated_data["fee"] = validated_data["player"].market_value - validated_data[
+                "swapped_player"].market_value
 
         instance = super().create(validated_data)
 
