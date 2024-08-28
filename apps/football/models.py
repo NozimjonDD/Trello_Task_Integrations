@@ -1,8 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from apps.common.models import BaseModel
 from apps.common import utils as common_utils
+from apps.common.models import BaseModel
 
 
 class FootballBaseModel(BaseModel):
@@ -314,10 +314,14 @@ class PremierLeagueStatusByPlayer(FootballBaseModel):
 
     def __str__(self):
         if self.first_name and self.second_name:
-            return f"{self.first_name} - {self.second_name}"
+            mark = False
+            if self.fantasy_player.all():
+                mark = True
+            return f"{mark}: {self.first_name} - {self.second_name}"
         return f"{self.code} - {self.web_name}"
 
 
 class CommonPlayer(BaseModel):
-    fantasy_player = models.ForeignKey(to="PremierLeagueStatusByPlayer", on_delete=models.CASCADE, related_name="fantasy_player")
+    fantasy_player = models.ForeignKey(to="PremierLeagueStatusByPlayer", on_delete=models.CASCADE,
+                                       related_name="fantasy_player")
     sportmonks_player = models.ForeignKey(to="Player", on_delete=models.CASCADE, related_name="sportmonks_player")
