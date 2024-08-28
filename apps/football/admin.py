@@ -174,5 +174,19 @@ class PremierLeagueStatusByPlayerAdmin(admin.ModelAdmin):
 class CommonPlayerAdmin(admin.ModelAdmin):
     """ here PremierLeagueStatusByPlayer model and Player model relations"""
 
-    list_display = ("fantasy_player", "sportmonks_player")
+    list_display = ("image_tag_ft", "fantasy_player",  "image_tag_sm", "sportmonks_player")
     autocomplete_fields = ("sportmonks_player", "fantasy_player",)
+
+    def image_tag_ft(self, obj):
+        if obj.fantasy_player:
+            return mark_safe('<img class="image" src="%s" width="50" height="50" />' % (obj.fantasy_player.photo_url))
+        return None
+
+    image_tag_ft.short_description = _("fantasy picture")
+
+    def image_tag_sm(self, obj):
+        if obj.sportmonks_player:
+            return mark_safe('<img class="image" src="%s" width="50" height="50" />' % (obj.sportmonks_player.profile_picture_path))
+        return None
+
+    image_tag_sm.short_description = _("sportmonks picture")
