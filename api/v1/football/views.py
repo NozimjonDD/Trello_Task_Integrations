@@ -47,6 +47,7 @@ class ClubListAPIView(generics.ListAPIView):
     serializer_class = serializers.ClubListSerializer
     permission_classes = [permissions.IsAuthenticated]
     search_fields = ("name", "short_name",)
+    pagination_class = None
 
 
 class RoundListAPIView(generics.ListAPIView):
