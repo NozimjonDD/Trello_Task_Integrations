@@ -60,9 +60,10 @@ class FixtureAdmin(admin.ModelAdmin):
     list_display_links = ("title", "id",)
     search_fields = ("title", "season__name", "round__name", "state__title", "remote_id", "id",)
     autocomplete_fields = ("season", "round", "state", "home_club", "away_club",)
+    list_filter = ("round",)
 
     def result_score(self, obj):
-        if obj.home_club_score and obj.away_club_score:
+        if obj.home_club_score is not None and obj.away_club_score is not None:
             return f"{obj.home_club_score}:{obj.away_club_score}"
         return "-:-"
 
@@ -174,7 +175,7 @@ class PremierLeagueStatusByPlayerAdmin(admin.ModelAdmin):
 class CommonPlayerAdmin(admin.ModelAdmin):
     """ here PremierLeagueStatusByPlayer model and Player model relations"""
 
-    list_display = ("image_tag_ft", "fantasy_player",  "image_tag_sm", "sportmonks_player")
+    list_display = ("image_tag_ft", "fantasy_player", "image_tag_sm", "sportmonks_player")
     autocomplete_fields = ("sportmonks_player", "fantasy_player",)
 
     def image_tag_ft(self, obj):
@@ -186,7 +187,8 @@ class CommonPlayerAdmin(admin.ModelAdmin):
 
     def image_tag_sm(self, obj):
         if obj.sportmonks_player:
-            return mark_safe('<img class="image" src="%s" width="50" height="50" />' % (obj.sportmonks_player.profile_picture_path))
+            return mark_safe(
+                '<img class="image" src="%s" width="50" height="50" />' % (obj.sportmonks_player.profile_picture_path))
         return None
 
     image_tag_sm.short_description = _("sportmonks picture")
