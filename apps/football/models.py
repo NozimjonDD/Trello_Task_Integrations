@@ -325,3 +325,83 @@ class CommonPlayer(BaseModel):
     fantasy_player = models.ForeignKey(to="PremierLeagueStatusByPlayer", on_delete=models.CASCADE,
                                        related_name="fantasy_player")
     sportmonks_player = models.ForeignKey(to="Player", on_delete=models.CASCADE, related_name="sportmonks_player")
+
+
+# STATISTICS
+class PlayerStatistic(FootballBaseModel):
+    class Meta:
+        db_table = "player_statistic"
+        verbose_name = _("Player statistic")
+        verbose_name_plural = _("Player statistics")
+
+    player = models.ForeignKey(
+        to="Player", on_delete=models.CASCADE, related_name="statistics", verbose_name=_("Player")
+    )
+    club = models.ForeignKey(
+        to="Club", on_delete=models.CASCADE, related_name="player_statistics", verbose_name=_("Club")
+    )
+    season = models.ForeignKey(
+        to="Season", on_delete=models.CASCADE, related_name="+", verbose_name=_("Season")
+    )
+    has_values = models.BooleanField(default=False, verbose_name=_("Has values"))
+
+    def __str__(self):
+        return f"{self.player} - {self.season}"
+
+
+class PlayerStatisticDetail(FootballBaseModel):
+    class Meta:
+        db_table = "player_statistic_detail"
+        verbose_name = _("Player statistic")
+        verbose_name_plural = _("Player statistics")
+
+    statistic = models.ForeignKey(to="PlayerStatistic", on_delete=models.CASCADE, related_name="details")
+    type = models.ForeignKey(to="SportMonksType", on_delete=models.CASCADE, related_name="+", verbose_name=_("Type"))
+    value = models.JSONField()
+
+    def __str__(self):
+        return f"{self.type} - {self.value}"
+
+
+# EVENT
+class FixtureEvent(FootballBaseModel):
+    class Meta:
+        db_table = "fixture_event"
+        verbose_name = _("Fixture event")
+        verbose_name_plural = _("Fixture events")
+
+    fixture = models.ForeignKey(
+        to="football.Fixture",
+        verbose_name=_("Fixture"),
+        on_delete=models.CASCADE,
+        related_name="events",
+    )
+    type = models.ForeignKey(
+        to="football.SportMonksType",
+        verbose_name=_("Type"),
+        on_delete=models.CASCADE,
+        related_name="+",
+    )
+    sub_type = models.ForeignKey(
+        to="football.SportMonksType",
+        verbose_name=_("Sub type"),
+        on_delete=models.CASCADE,
+        related_name="+",
+        null=True,
+        blank=True
+    )
+    player = models.ForeignKey(
+        to="football.Player",
+        verbose_name=_("Player"),
+        on_delete=models.CASCADE,
+        related_name="fixture_events",
+    )
+    minute = models.IntegerField(verbose_name=_("Minute"))
+    extra_minute = models.IntegerField(verbose_name=_("Extra minute"), null=True, blank=True)
+    injured = models.BooleanField(verbose_name=_("Injured"), null=True, blank=True)
+    on_bench = models.BooleanField(verbose_name=_("On bench"), null=True, blank=True)
+    result = models.CharField(verbose_name=_("Result"), null=True, blank=True)
+    info = models.CharField(verbose_name=_("Info"), null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.fixture} - {self.type}"
