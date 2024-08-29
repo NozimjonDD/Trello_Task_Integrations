@@ -93,6 +93,13 @@ class FixtureEventAdmin(admin.ModelAdmin):
     search_fields = ("fixture__title", "player__full_name", "type__name",)
     autocomplete_fields = ("fixture", "type", "sub_type", "club", "player", "related_player",)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related(
+            "fixture", "type", "sub_type", "club", "player",
+            "related_player",
+        )
+        return qs
+
 
 @admin.register(models.Club)
 class ClubAdmin(admin.ModelAdmin):
