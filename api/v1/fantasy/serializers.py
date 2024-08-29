@@ -9,6 +9,7 @@ from apps.football import models as football_models
 from apps.common.data import TransferTypeChoices, LeagueStatusType, LeagueStatusChoices
 
 from api.v1 import common_serializers
+from api.v1.football.serializers import PlayerDetailSerializer
 
 
 class FormationListSerializer(serializers.ModelSerializer):
@@ -234,15 +235,30 @@ class SquadDetailUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
+class _SquadPlayerDetailTMPlayerSerializer(serializers.ModelSerializer):
+    player = PlayerDetailSerializer()
+
+    class Meta:
+        model = models.TeamPlayer
+        fields = (
+            "id",
+            "player",
+        )
+
+
 class SquadPlayerDetailUpdateSerializer(serializers.ModelSerializer):
+    team_player = _SquadPlayerDetailTMPlayerSerializer(read_only=True, source="player")
+
     class Meta:
         model = models.SquadPlayer
         fields = (
             "id",
             "is_captain",
+            "team_player",
         )
         extra_kwargs = {
-            "is_captain": {"required": True, "allow_null": False}
+            "is_captain": {"required": True, "allow_null": False},
+            "team_player": {"read_only": True, },
         }
 
     def validate(self, attrs):
