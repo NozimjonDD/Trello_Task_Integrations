@@ -172,11 +172,26 @@ class FixtureEvent(FootballBaseModel):
         null=True,
         blank=True
     )
+    club = models.ForeignKey(
+        to="football.Club",
+        verbose_name=_("Club"),
+        on_delete=models.CASCADE,
+        related_name="+",
+        null=True,
+    )
     player = models.ForeignKey(
         to="football.Player",
         verbose_name=_("Player"),
         on_delete=models.CASCADE,
         related_name="fixture_events",
+    )
+    related_player = models.ForeignKey(
+        to="football.Player",
+        verbose_name=_("Related Player"),
+        on_delete=models.SET_NULL,
+        related_name="related_fixture_events",
+        null=True,
+        blank=True,
     )
     minute = models.IntegerField(verbose_name=_("Minute"))
     extra_minute = models.IntegerField(verbose_name=_("Extra minute"), null=True, blank=True)

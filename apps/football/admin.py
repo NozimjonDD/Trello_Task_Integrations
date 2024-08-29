@@ -76,7 +76,9 @@ class FixtureEventAdmin(admin.ModelAdmin):
         "fixture",
         "type",
         "sub_type",
+        "club",
         "player",
+        "related_player",
         "minute",
         "extra_minute",
         "injured",
@@ -86,8 +88,10 @@ class FixtureEventAdmin(admin.ModelAdmin):
         "created_at",
         "id",
     )
+    exclude = ("is_deleted", "deleted_at",)
     list_display_links = ("fixture", "id",)
     search_fields = ("fixture__title", "player__full_name", "type__name",)
+    autocomplete_fields = ("fixture", "type", "sub_type", "club", "player", "related_player",)
 
 
 @admin.register(models.Club)
