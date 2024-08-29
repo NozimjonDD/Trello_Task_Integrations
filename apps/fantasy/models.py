@@ -340,3 +340,63 @@ class LeagueParticipant(BaseModel):
 
     def __str__(self):
         return f"{self.league} - {self.team}"
+
+
+class PlayerRoundPoint(BaseModel):
+    class Meta:
+        db_table = "fantasy_player_round_point"
+        verbose_name = _("Fantasy player round point")
+        verbose_name_plural = _("Fantasy player round points")
+        unique_together = ("player", "round",)
+
+    player = models.ForeignKey(
+        to="football.Player",
+        on_delete=models.CASCADE,
+        related_name="round_points",
+        verbose_name=_("Player"),
+    )
+    round = models.ForeignKey(
+        to="football.Round",
+        on_delete=models.CASCADE,
+        related_name="+",
+        verbose_name=_("Round"),
+    )
+    point = models.DecimalField(
+        verbose_name=_("Points"),
+        max_digits=18,
+        decimal_places=2,
+        default=0,
+    )
+
+    def __str__(self):
+        return f"{self.player} - {self.round} - {self.point}"
+
+
+class TeamRoundPoint(BaseModel):
+    class Meta:
+        db_table = "fantasy_team_round_point"
+        verbose_name = _("Fantasy team round point")
+        verbose_name_plural = _("Fantasy team round points")
+        unique_together = ("team", "round",)
+
+    team = models.ForeignKey(
+        to="fantasy.Team",
+        on_delete=models.CASCADE,
+        related_name="round_points",
+        verbose_name=_("Team"),
+    )
+    round = models.ForeignKey(
+        to="football.Round",
+        on_delete=models.CASCADE,
+        related_name="+",
+        verbose_name=_("Round"),
+    )
+    point = models.DecimalField(
+        verbose_name=_("Points"),
+        max_digits=18,
+        decimal_places=2,
+        default=0,
+    )
+
+    def __str__(self):
+        return f"{self.team} - {self.round} - {self.point}"
