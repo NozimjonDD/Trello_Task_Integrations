@@ -342,6 +342,7 @@ class LeagueParticipant(BaseModel):
         return f"{self.league} - {self.team}"
 
 
+# POINTS
 class PlayerRoundPoint(BaseModel):
     class Meta:
         db_table = "fantasy_player_round_point"

@@ -120,3 +120,31 @@ class FantasyLeagueAdmin(admin.ModelAdmin):
 @admin.register(models.LeagueParticipant)
 class LeagueParticipantAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.PlayerRoundPoint)
+class PlayerRoundPointAdmin(admin.ModelAdmin):
+    list_display = ("player", "round", "point", "created_at", "id",)
+    list_display_links = ("player", "id",)
+    search_fields = ("player__first_name", "player__full_name", "player__common_name", "round__title", "point", "id",)
+    list_filter = ("round", "created_at",)
+    autocomplete_fields = ("player", "round",)
+    exclude = ("is_deleted", "deleted_at",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related("player", "round", )
+        return qs
+
+
+@admin.register(models.TeamRoundPoint)
+class TeamRoundPointAdmin(admin.ModelAdmin):
+    list_display = ("team", "round", "point", "created_at", "id",)
+    list_display_links = ("team", "id",)
+    search_fields = ("team__name", "round__title", "point", "id",)
+    list_filter = ("round", "created_at",)
+    autocomplete_fields = ("team", "round",)
+    exclude = ("is_deleted", "deleted_at",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related("team", "round", )
+        return qs
