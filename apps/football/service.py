@@ -50,7 +50,7 @@ class SportMonksAPIClient:
 
     def fetch_fixtures_by_season(self, season_id, page=1, per_page=50):
         endpoint = f"/{SPORT}/fixtures?page={page}&per_page={per_page}"
-        endpoint += f"&include=participants;state;aggregate;scores&filter=fixtureSeasons:{season_id}"
+        endpoint += f"&include=participants;state;aggregate;scores;events&filter=fixtureSeasons:{season_id}"
         return self.fetch_base(endpoint)
 
     def fetch_club_by_id(self, club_id):

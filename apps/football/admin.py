@@ -70,6 +70,26 @@ class FixtureAdmin(admin.ModelAdmin):
     result_score.short_description = _("Result score")
 
 
+@admin.register(models.FixtureEvent)
+class FixtureEventAdmin(admin.ModelAdmin):
+    list_display = (
+        "fixture",
+        "type",
+        "sub_type",
+        "player",
+        "minute",
+        "extra_minute",
+        "injured",
+        "on_bench",
+        "result",
+        "info",
+        "created_at",
+        "id",
+    )
+    list_display_links = ("fixture", "id",)
+    search_fields = ("fixture__title", "player__full_name", "type__name",)
+
+
 @admin.register(models.Club)
 class ClubAdmin(admin.ModelAdmin):
     list_display = ("name", "short_name", "logo_html", "league", "founded_year", "type", "id",)

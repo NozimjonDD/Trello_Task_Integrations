@@ -225,7 +225,7 @@ def update_fixtures_by_season(season_id):
                         elif score["participant_id"] == away_club.remote_id:
                             away_score = score["score"]["goals"]
 
-                models.Fixture.objects.update_or_create(
+                fixture_obj, _ = models.Fixture.objects.update_or_create(
                     remote_id=fixture["id"],
                     defaults={
                         "season": models.Season.objects.get(remote_id=fixture["season_id"]),
@@ -242,6 +242,31 @@ def update_fixtures_by_season(season_id):
                         "length": fixture["length"],
                     }
                 )
+
+                for event in fixture["events"]:
+                    if event["sub_type_id"]:
+                        sub_type = models.SportMonksType.objects.get(remote_id=event["sub_type_id"])
+                    else:
+                        sub_type = None
+
+                    try:
+                        models.FixtureEvent.objects.update_or_create(
+                            remote_id=event["id"],
+                            defaults={
+                                "fixture": fixture_obj,
+                                "type": models.SportMonksType.objects.get(remote_id=event["type_id"]),
+                                "sub_type": sub_type,
+                                "player": models.Player.objects.get(remote_id=event["player_id"]),
+                                "minute": event["minute"],
+                                "extra_minute": event["extra_minute"],
+                                "injured": event["injured"],
+                                "on_bench": event["on_bench"],
+                                "result": event["result"],
+                                "info": event["info"],
+                            }
+                        )
+                    except (models.Player.DoesNotExist,):
+                        continue
         has_more = resp_data["pagination"]["has_more"]
         page += 1
 
