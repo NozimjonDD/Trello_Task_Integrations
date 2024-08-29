@@ -38,6 +38,7 @@ class TeamDetailAPIView(generics.RetrieveAPIView):
         return qs
 
 
+# ========================== SQUAD START ==========================
 class SquadDetailUpdateAPIView(generics.RetrieveUpdateAPIView):
     queryset = models.Squad.objects.filter(is_deleted=False)
     serializer_class = serializers.SquadDetailUpdateSerializer
@@ -48,10 +49,26 @@ class SquadDetailUpdateAPIView(generics.RetrieveUpdateAPIView):
         return qs
 
 
+class SquadPlayerDetailUpdateAPIView(generics.RetrieveUpdateAPIView):
+    queryset = models.SquadPlayer.objects.filter(is_deleted=False)
+    serializer_class = serializers.SquadPlayerDetailUpdateSerializer
+    permission_classes = [api_permissions.TeamCompleteUserPermission]
+    http_method_names = ["get", "put"]
+
+    def get_queryset(self):
+        qs = self.queryset.filter(
+            squad__team__user_id=self.request.user.pk
+        )
+        return qs
+
+
 class SquadSubstituteAPIView(generics.CreateAPIView):
     queryset = models.SquadPlayer
     serializer_class = serializers.SquadSubstituteSerializer
     permission_classes = (api_permissions.TeamCompleteUserPermission,)
+
+
+# ========================== SQUAD END ==========================
 
 
 class TransferAPIView(generics.CreateAPIView):

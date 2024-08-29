@@ -234,6 +234,37 @@ class SquadDetailUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
+class SquadPlayerDetailUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SquadPlayer
+        fields = (
+            "id",
+            "is_captain",
+        )
+        extra_kwargs = {
+            "is_captain": {"required": True, "allow_null": False}
+        }
+
+    def validate(self, attrs):
+        if not attrs["is_captain"]:
+            raise serializers.ValidationError(
+                code="invalid_value",
+                detail={"is_captain": [_("You can only mark as is_captain.")]}
+            )
+        if self.instance.is_substitution:
+            raise serializers.ValidationError(
+                code="not_allowed",
+                detail={"is_captain": [_("You can't mark as captain substitute players.")]}
+            )
+        return attrs
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        instance.squad.players.exclude(id=instance.pk).update(is_captain=False)
+        return instance
+
+
 class SquadSubstituteSerializer(serializers.ModelSerializer):
     taken_off_player = serializers.CharField()
     subbed_on_player = serializers.CharField()
