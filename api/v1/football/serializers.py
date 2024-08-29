@@ -87,19 +87,6 @@ class ClubListSerializer(serializers.ModelSerializer):
         )
 
 
-class RoundListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Round
-        fields = (
-            "id",
-            "name",
-            "is_finished",
-            "is_current",
-            "starting_at",
-            "ending_at",
-        )
-
-
 class FixtureListSerializer(serializers.ModelSerializer):
     home_club = common_serializers.CommonClubSerializer()
     away_club = common_serializers.CommonClubSerializer()

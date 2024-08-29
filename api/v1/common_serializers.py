@@ -83,3 +83,16 @@ class CommonFixtureStateSerializer(serializers.ModelSerializer):
             "state",
             "title",
         )
+
+
+class CommonRoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = football_models.Round
+        fields = (
+            "id",
+            "name",
+            "is_finished",
+            "is_current",
+            "starting_at",
+            "ending_at",
+        )

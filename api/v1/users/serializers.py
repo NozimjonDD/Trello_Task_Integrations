@@ -6,6 +6,8 @@ from apps.users import models
 from apps.fantasy import models as fantasy_models
 from apps.football import models as football_models
 
+from api.v1 import common_serializers
+
 
 class _AccountSettingsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,9 +51,11 @@ class AccountDetailSerializer(serializers.ModelSerializer):
             "game_week",
         )
 
-    def get_game_week(self, obj):
+    @staticmethod
+    def get_game_week(obj):
         current_round = football_models.Round.objects.filter(
             league__remote_id=settings.PREMIER_LEAGUE_ID,
             season__is_current=True,
+            is_current=True,
         ).first()
-        return current_round
+        return common_serializers.CommonRoundSerializer(current_round).data

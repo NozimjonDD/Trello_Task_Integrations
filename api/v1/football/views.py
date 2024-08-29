@@ -7,6 +7,8 @@ from apps.football.utils import update_premierleague_status_by_players
 from . import serializers, filtersets
 from apps.football import models
 
+from api.v1 import common_serializers
+
 
 class PlayerListAPIView(generics.ListAPIView):
     queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=settings.PREMIER_LEAGUE_ID)
@@ -52,7 +54,7 @@ class ClubListAPIView(generics.ListAPIView):
 
 class RoundListAPIView(generics.ListAPIView):
     queryset = models.Round.objects.filter(is_deleted=False, league__remote_id=settings.PREMIER_LEAGUE_ID)
-    serializer_class = serializers.RoundListSerializer
+    serializer_class = common_serializers.CommonRoundSerializer
     permission_classes = [permissions.IsAuthenticated]
     search_fields = (
         "name",
