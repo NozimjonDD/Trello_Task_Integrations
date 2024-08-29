@@ -48,6 +48,12 @@ class SquadDetailUpdateAPIView(generics.RetrieveUpdateAPIView):
         return qs
 
 
+class SquadSubstituteAPIView(generics.CreateAPIView):
+    queryset = models.SquadPlayer
+    serializer_class = serializers.SquadSubstituteSerializer
+    permission_classes = (api_permissions.TeamCompleteUserPermission,)
+
+
 class TransferAPIView(generics.CreateAPIView):
     model = models.Transfer
     serializer_class = serializers.TransferSerializer

@@ -8,6 +8,7 @@ urlpatterns = [
     path(
         "squad/<int:pk>/", views.SquadDetailUpdateAPIView.as_view(), name="squad-detail-update"
     ),
+    path("squad/substitute/", views.SquadSubstituteAPIView.as_view(), name="squad-substitute"),
 
     path("transfer/", views.TransferAPIView.as_view(), name="player-transfer"),
 

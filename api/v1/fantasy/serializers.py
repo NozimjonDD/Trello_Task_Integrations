@@ -234,6 +234,73 @@ class SquadDetailUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
+class SquadSubstituteSerializer(serializers.ModelSerializer):
+    taken_off_player = serializers.CharField()
+    subbed_on_player = serializers.CharField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["taken_off_player"] = serializers.PrimaryKeyRelatedField(
+            queryset=models.SquadPlayer.objects.filter(
+                is_deleted=False,
+                squad__team__user_id=self.context["request"].user.id,
+                is_substitution=False,
+            ),
+            write_only=True,
+        )
+        self.fields["subbed_on_player"] = serializers.PrimaryKeyRelatedField(
+            queryset=models.SquadPlayer.objects.filter(
+                is_deleted=False,
+                squad__team__user_id=self.context["request"].user.id,
+                is_substitution=True,
+            ),
+            write_only=True,
+        )
+
+    class Meta:
+        model = models.SquadPlayer
+        fields = (
+            "taken_off_player",
+            "subbed_on_player",
+        )
+
+    def validate(self, attrs):
+        taken_off_player = attrs["taken_off_player"]
+        subbed_on_player = attrs["subbed_on_player"]
+
+        if taken_off_player.squad_id != subbed_on_player.squad_id:
+            raise serializers.ValidationError(
+                code="same_squad_required",
+                detail={"squad": [_("You can only swap squad players in same squad.")]}
+            )
+
+        if taken_off_player.position.position != taken_off_player.position.position:
+            raise serializers.ValidationError(
+                code="same_position_required",
+                detail={"position": [_("You can only swap squad players in same position for now.")]}
+            )
+
+        if taken_off_player.is_captain:
+            raise serializers.ValidationError(
+                code="choose_other_captain_first",
+                detail={"taken_off_player": [_("First you should choose other captain.")]}
+            )
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        taken_off_player = validated_data.pop("taken_off_player")
+        subbed_on_player = validated_data.pop("subbed_on_player")
+
+        temp_player = subbed_on_player.player
+        subbed_on_player.player = taken_off_player.player
+        taken_off_player.player = temp_player
+
+        subbed_on_player.save(update_fields=["player"])
+        taken_off_player.save(update_fields=["player"])
+        return subbed_on_player
+
+
 class TransferSerializer(serializers.ModelSerializer):
     player = serializers.PrimaryKeyRelatedField(
         queryset=football_models.Player.objects.filter(
