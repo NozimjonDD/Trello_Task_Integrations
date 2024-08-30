@@ -204,6 +204,29 @@ class FixtureEvent(FootballBaseModel):
         return f"{self.fixture} - {self.type}"
 
 
+class FixtureStatistic(FootballBaseModel):
+    class Meta:
+        db_table = "fixture_statistic"
+        verbose_name = _("Fixture statistic")
+        verbose_name_plural = _("Fixture statistics")
+
+    fixture = models.ForeignKey(
+        to="Fixture", on_delete=models.CASCADE, related_name="statistics", verbose_name=_("Fixture")
+    )
+    type = models.ForeignKey(
+        to="SportMonksType", on_delete=models.CASCADE, related_name="+", verbose_name=_("Type")
+    )
+    club = models.ForeignKey(
+        to="Club", on_delete=models.CASCADE, related_name="+", verbose_name=_("Club")
+    )
+    value = models.IntegerField(verbose_name=_("Value"))
+    location = models.CharField(max_length=100, verbose_name=_("Location"))
+    data = models.JSONField(verbose_name=_("Data"), null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.fixture} - {self.type}"
+
+
 class Club(FootballBaseModel):
     class Meta:
         db_table = "football_club"
@@ -289,6 +312,20 @@ class Player(FootballBaseModel):
             return None
 
         return common_utils.pretty_price(self.market_value)
+
+    def calculate_round_points(self, rnd):
+        p_short_name = self.position.short_name
+
+        if p_short_name == "GK":
+            pass
+        elif p_short_name == "DF":
+            pass
+        elif p_short_name == "MF":
+            pass
+        elif p_short_name == "ATK":
+            pass
+        else:
+            return
 
 
 class ClubPlayer(FootballBaseModel):

@@ -53,6 +53,38 @@ class FixtureStateAdmin(admin.ModelAdmin):
     actions = (actions.update_fixture_states_action,)
 
 
+class FixtureStatisticInlineAdmin(admin.StackedInline):
+    model = models.FixtureStatistic
+    extra = 0
+    exclude = ("is_deleted", "deleted_at",)
+    autocomplete_fields = ("fixture", "type", "club",)
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class FixtureEventInlineAdmin(admin.StackedInline):
+    model = models.FixtureEvent
+    extra = 0
+    exclude = ("is_deleted", "deleted_at",)
+    autocomplete_fields = ("fixture", "type", "sub_type", "club", "player", "related_player",)
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(models.Fixture)
 class FixtureAdmin(admin.ModelAdmin):
     list_display = (
@@ -61,6 +93,8 @@ class FixtureAdmin(admin.ModelAdmin):
     search_fields = ("title", "season__name", "round__name", "state__title", "remote_id", "id",)
     autocomplete_fields = ("season", "round", "state", "home_club", "away_club",)
     list_filter = ("round",)
+    actions = (actions.update_fixture_details,)
+    inlines = (FixtureEventInlineAdmin,)
 
     def result_score(self, obj):
         if obj.home_club_score is not None and obj.away_club_score is not None:
@@ -99,6 +133,23 @@ class FixtureEventAdmin(admin.ModelAdmin):
             "related_player",
         )
         return qs
+
+
+@admin.register(models.FixtureStatistic)
+class FixtureStatisticAdmin(admin.ModelAdmin):
+    list_display = (
+        "fixture",
+        "type",
+        "club",
+        "value",
+        "location",
+        "created_at",
+        "id",
+    )
+    exclude = ("is_deleted", "deleted_at",)
+    list_display_links = ("fixture", "id",)
+    search_fields = ("fixture__title", "club__name", "type__name",)
+    autocomplete_fields = ("fixture", "type", "club",)
 
 
 @admin.register(models.Club)
