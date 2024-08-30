@@ -103,6 +103,7 @@ JAZZMIN_SETTINGS = {
         "football.Fixture",
         "football.FixtureEvent",
         "football.FixtureStatistic",
+        "football.Lineup",
 
         "football.FixtureState",
         "football.Club",
@@ -143,6 +144,7 @@ JAZZMIN_SETTINGS = {
         "football.FixtureEvent": "fas fa-calendar-check",
         "football.FixtureStatistic": "fas fa-chart-bar",
         "football.FixtureState": "fas fa-clipboard-check",
+        "football.Lineup": "fas fa-clipboard-check",
         "football.Club": "fas fa-building",
         "football.Position": "fas fa-user-tag",
         "football.Player": "fas fa-user",

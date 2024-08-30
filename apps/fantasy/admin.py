@@ -124,10 +124,31 @@ class LeagueParticipantAdmin(admin.ModelAdmin):
 
 @admin.register(models.PlayerRoundPoint)
 class PlayerRoundPointAdmin(admin.ModelAdmin):
-    list_display = ("player", "round", "point", "created_at", "id",)
+    list_display = (
+        "player",
+        "round",
+        "total_point",
+
+        "clean_sheet",
+        "minutes_played",
+        "goal",
+        "goal_conceded",
+        "assist",
+        "saves",
+        "penalty_save",
+        "penalty_miss",
+        "yellow_card",
+        "red_card",
+
+        "created_at",
+        "id",
+    )
     list_display_links = ("player", "id",)
-    search_fields = ("player__first_name", "player__full_name", "player__common_name", "round__title", "point", "id",)
-    list_filter = ("round", "created_at",)
+    search_fields = (
+        "player__first_name", "player__full_name", "player__common_name", "round__title", "total_point", "id",
+        "remote_id",
+    )
+    list_filter = ("round", "player__position", "created_at",)
     autocomplete_fields = ("player", "round",)
     exclude = ("is_deleted", "deleted_at",)
 

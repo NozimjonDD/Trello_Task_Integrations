@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
 from . import utils, tasks
+from apps.fantasy import utils as fantasy_utils
 
 
 @admin.action(description=_("Update leagues"))
@@ -66,8 +67,15 @@ def update_fixture_states_action(model_admin, request, queryset):
 @admin.action(description=_("Update fixture details"))
 def update_fixture_details(model_admin, request, queryset):
     for fixture in queryset:
-        utils.update_fixture_by_id(fixture.pk)
+        utils.update_fixture_by_id(fixture.remote_id)
     model_admin.message_user(request, _("Chosen fixture details updated!"))
+
+
+@admin.action(description=_("Update fixture player round points"))
+def update_fixture_player_round_points(model_admin, request, queryset):
+    for fixture in queryset:
+        fantasy_utils.update_fixture_player_rnd_points(fixture)
+    model_admin.message_user(request, _("Chosen fixture player round points updated."))
 
 
 @admin.action(description=_("Update PremierLeague players Statistics"))

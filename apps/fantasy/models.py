@@ -362,7 +362,131 @@ class PlayerRoundPoint(BaseModel):
         related_name="+",
         verbose_name=_("Round"),
     )
-    point = models.DecimalField(
+    total_point = models.DecimalField(
+        verbose_name=_("Total points"),
+        max_digits=18,
+        decimal_places=2,
+        default=0,
+    )
+
+    clean_sheet = models.DecimalField(
+        verbose_name=_("clean sheet"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    minutes_played = models.DecimalField(
+        verbose_name=_("Minutes played"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    goal = models.DecimalField(
+        verbose_name=_("Goal"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    goal_conceded = models.DecimalField(
+        verbose_name=_("Goal conceded"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    assist = models.DecimalField(
+        verbose_name=_("Assist"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    saves = models.DecimalField(
+        verbose_name=_("Saves"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    penalty_save = models.DecimalField(
+        verbose_name=_("Penalty save"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    penalty_miss = models.DecimalField(
+        verbose_name=_("Penalty miss"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    yellow_card = models.DecimalField(
+        verbose_name=_("Yellow card"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    red_card = models.DecimalField(
+        verbose_name=_("Red card"),
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return f"{self.player} - {self.round} - {self.total_point}"
+
+    def calculate_total_point(self):
+        total_point = 0
+        total_point += self.clean_sheet if self.clean_sheet else 0
+        total_point += self.minutes_played if self.minutes_played else 0
+        total_point += self.goal if self.goal else 0
+        total_point += self.goal_conceded if self.goal_conceded else 0
+        total_point += self.assist if self.assist else 0
+        total_point += self.saves if self.saves else 0
+        total_point += self.penalty_save if self.penalty_save else 0
+        total_point += self.penalty_miss if self.penalty_miss else 0
+        total_point += self.yellow_card if self.yellow_card else 0
+        total_point += self.red_card if self.red_card else 0
+        return total_point
+
+
+class SquadPlayerRoundPoint(BaseModel):
+    class Meta:
+        db_table = "squad_player_round_point"
+        verbose_name = _("Squad player round point")
+        verbose_name_plural = _("Squad player round points")
+
+    squad_player = models.OneToOneField(
+        to="fantasy.SquadPlayer",
+        verbose_name=_("Squad player"),
+        on_delete=models.CASCADE,
+        related_name="round_point",
+    )
+    round = models.ForeignKey(
+        to="football.Round",
+        verbose_name=_("Round"),
+        on_delete=models.SET_NULL,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
+    player_point = models.ForeignKey(
+        to="fantasy.PlayerRoundPoint",
+        verbose_name=_("Player round point"),
+        on_delete=models.SET_NULL,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
+    total_point = models.DecimalField(
         verbose_name=_("Points"),
         max_digits=18,
         decimal_places=2,
@@ -370,7 +494,7 @@ class PlayerRoundPoint(BaseModel):
     )
 
     def __str__(self):
-        return f"{self.player} - {self.round} - {self.point}"
+        return f"{self.squad_player} - {self.total_point}"
 
 
 class TeamRoundPoint(BaseModel):

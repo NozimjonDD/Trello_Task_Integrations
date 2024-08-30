@@ -93,7 +93,7 @@ class FixtureAdmin(admin.ModelAdmin):
     search_fields = ("title", "season__name", "round__name", "state__title", "remote_id", "id",)
     autocomplete_fields = ("season", "round", "state", "home_club", "away_club",)
     list_filter = ("round",)
-    actions = (actions.update_fixture_details,)
+    actions = (actions.update_fixture_details, actions.update_fixture_player_round_points,)
     inlines = (FixtureEventInlineAdmin,)
 
     def result_score(self, obj):
@@ -150,6 +150,18 @@ class FixtureStatisticAdmin(admin.ModelAdmin):
     list_display_links = ("fixture", "id",)
     search_fields = ("fixture__title", "club__name", "type__name",)
     autocomplete_fields = ("fixture", "type", "club",)
+
+
+@admin.register(models.Lineup)
+class LineupAdmin(admin.ModelAdmin):
+    list_display = ("fixture", "club", "player", "type", "created_at", "remote_id", "id",)
+    list_display_links = ("fixture", "id",)
+    search_fields = ("fixture__title", "club__name", "player__full_name", "remote_id", "id",)
+    autocomplete_fields = ("fixture", "type", "club", "player",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related("fixture", "type", "club", "player", )
+        return qs
 
 
 @admin.register(models.Club)
@@ -209,7 +221,7 @@ class PlayerAdmin(admin.ModelAdmin):
     )
     list_display_links = ("first_name", "id",)
     list_filter = ("club", "position",)
-    search_fields = ("first_name", "last_name", "common_name", "club__name", "position__name",)
+    search_fields = ("first_name", "last_name", "common_name", "club__name", "position__name", "remote_id",)
     autocomplete_fields = ("club", "position",)
 
     def profile_pic(self, obj):

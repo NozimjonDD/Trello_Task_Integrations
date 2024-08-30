@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from django.db import transaction
 from rest_framework import serializers
 
@@ -282,6 +284,20 @@ def update_fixtures_by_season(season_id):
                             "location": stat["location"],
                         }
                     )
+                try:
+                    for lineup in fixture["lineups"]:
+                        models.Lineup.objects.update_or_create(
+                            remote_id=lineup["id"],
+                            defaults={
+                                "fixture": fixture_obj,
+                                "type": models.SportMonksType.objects.get(remote_id=lineup["type_id"]),
+                                "club": models.Club.objects.get(remote_id=lineup["team_id"]),
+                                "player": models.Player.objects.get(remote_id=lineup["player_id"]),
+                            }
+                        )
+                except models.Player.DoesNotExist:
+                    print("=" * 200)
+                    continue
         has_more = resp_data["pagination"]["has_more"]
         page += 1
 
@@ -376,6 +392,22 @@ def update_fixture_by_id(fixture_id):
                     "location": stat["location"],
                 }
             )
+
+        pprint(fixture["lineups"])
+        print("=" * 500)
+        try:
+            for lineup in fixture["lineups"]:
+                models.Lineup.objects.update_or_create(
+                    remote_id=lineup["id"],
+                    defaults={
+                        "fixture": fixture_obj,
+                        "type": models.SportMonksType.objects.get(remote_id=lineup["type_id"]),
+                        "club": models.Club.objects.get(remote_id=lineup["team_id"]),
+                        "player": models.Player.objects.get(remote_id=lineup["player_id"]),
+                    }
+                )
+        except (models.Player.DoesNotExist, models.Club.DoesNotExist, models.SportMonksType.DoesNotExist):
+            pass
 
 
 def update_clubs_by_season(season_id):

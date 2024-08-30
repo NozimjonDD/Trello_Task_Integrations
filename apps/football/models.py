@@ -9,7 +9,7 @@ class FootballBaseModel(BaseModel):
     class Meta:
         abstract = True
 
-    remote_id = models.PositiveIntegerField(verbose_name=_("remote id"), unique=True)
+    remote_id = models.BigIntegerField(verbose_name=_("remote id"), unique=True)
 
 
 class SportMonksType(FootballBaseModel):
@@ -225,6 +225,39 @@ class FixtureStatistic(FootballBaseModel):
 
     def __str__(self):
         return f"{self.fixture} - {self.type}"
+
+
+class Lineup(FootballBaseModel):
+    class Meta:
+        db_table = "lineup"
+        verbose_name = _("Fixture lineup")
+        verbose_name_plural = _("Fixture lineups")
+        unique_together = ("fixture", "player",)
+
+    fixture = models.ForeignKey(
+        to="Fixture", on_delete=models.CASCADE, related_name="lineups", verbose_name=_("Fixture")
+    )
+    club = models.ForeignKey(
+        to="football.Club",
+        verbose_name=_("Club"),
+        on_delete=models.CASCADE,
+        related_name="+",
+    )
+    player = models.ForeignKey(
+        to="football.Player",
+        verbose_name=_("Player"),
+        on_delete=models.CASCADE,
+        related_name="+",
+    )
+    type = models.ForeignKey(
+        to="football.SportMonksType",
+        verbose_name=_("Type"),
+        on_delete=models.CASCADE,
+        related_name="+",
+    )
+
+    def __str__(self):
+        return f"{self.player} - {self.fixture} - {self.type}"
 
 
 class Club(FootballBaseModel):
