@@ -139,8 +139,7 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
             "transfer_count",
         )
 
-    @staticmethod
-    def get_squad_players(obj):
+    def get_squad_players(self, obj):
         squad_players = obj.players.filter(
             is_substitution=False
         ).exclude(position__position__short_name="GK").order_by("position__position__remote_id", "position__ordering")
@@ -154,26 +153,24 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
         for i in scheme.split("-"):
             section = []
             for j in range(int(i)):
-                section.append(_DefaultSquadPlayerSerializer(squad_players[cnt], many=False).data)
+                section.append(_DefaultSquadPlayerSerializer(squad_players[cnt], many=False, context=self.context).data)
                 cnt += 1
             result.append(section)
 
         return result
 
-    @staticmethod
-    def get_gk(obj):
+    def get_gk(self, obj):
         gk = obj.players.filter(
             is_substitution=False,
             position__position__short_name="GK"
         ).first()
-        return _DefaultSquadPlayerSerializer(gk, many=False).data
+        return _DefaultSquadPlayerSerializer(gk, many=False, context=self.context).data
 
-    @staticmethod
-    def get_substitutes(obj):
+    def get_substitutes(self, obj):
         substitutes = obj.players.filter(
             is_substitution=True
         ).order_by("position__position__remote_id", "position__ordering")
-        return _DefaultSquadPlayerSerializer(substitutes, many=True).data
+        return _DefaultSquadPlayerSerializer(substitutes, many=True, context=self.context).data
 
     @staticmethod
     def get_transfer_count(obj):
@@ -212,7 +209,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 
         squad = models.Squad.get_or_create_gw_squad(obj, rnd)
 
-        return _DefaultSquadSerializer(squad, many=False).data
+        return _DefaultSquadSerializer(squad, many=False, context=self.context).data
 
 
 class SquadDetailUpdateSerializer(serializers.ModelSerializer):
