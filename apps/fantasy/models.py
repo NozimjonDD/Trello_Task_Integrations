@@ -567,13 +567,20 @@ class TeamRoundPoint(BaseModel):
         related_name="round_points",
         verbose_name=_("Team"),
     )
+    squad = models.OneToOneField(
+        to="fantasy.Squad",
+        on_delete=models.SET_NULL,
+        related_name="round_point",
+        verbose_name=_("Squad"),
+        null=True,
+    )
     round = models.ForeignKey(
         to="football.Round",
         on_delete=models.CASCADE,
         related_name="+",
         verbose_name=_("Round"),
     )
-    point = models.DecimalField(
+    total_point = models.DecimalField(
         verbose_name=_("Points"),
         max_digits=18,
         decimal_places=2,
@@ -581,4 +588,4 @@ class TeamRoundPoint(BaseModel):
     )
 
     def __str__(self):
-        return f"{self.team} - {self.round} - {self.point}"
+        return f"{self.team} - {self.round} - {self.total_point}"

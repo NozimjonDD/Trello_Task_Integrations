@@ -181,11 +181,11 @@ class SquadPlayerRoundPointAdmin(admin.ModelAdmin):
 
 @admin.register(models.TeamRoundPoint)
 class TeamRoundPointAdmin(admin.ModelAdmin):
-    list_display = ("team", "round", "point", "created_at", "id",)
+    list_display = ("team", "round", "total_point", "created_at", "id",)
     list_display_links = ("team", "id",)
-    search_fields = ("team__name", "round__title", "point", "id",)
+    search_fields = ("team__name", "round__title", "total_point", "id",)
     list_filter = ("round", "created_at",)
-    autocomplete_fields = ("team", "round",)
+    autocomplete_fields = ("team", "round", "squad",)
     exclude = ("is_deleted", "deleted_at",)
 
     def get_queryset(self, request):

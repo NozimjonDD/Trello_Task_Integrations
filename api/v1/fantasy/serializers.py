@@ -90,6 +90,16 @@ class _SquadPRoundPointSerializer(serializers.ModelSerializer):
         )
 
 
+class _SquadRoundPointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.TeamRoundPoint
+        fields = (
+            "id",
+            "round",
+            "total_point",
+        )
+
+
 class _DefaultSquadPlayerSerializer(serializers.ModelSerializer):
     team_player = _TeamPlayerSerializer(source="player")
     team_position = common_serializers.CommonFormationPositionSerializer(source="position")
@@ -113,6 +123,8 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
     gk = serializers.SerializerMethodField()
     squad_players = serializers.SerializerMethodField()
     substitutes = serializers.SerializerMethodField()
+    round_point = _SquadRoundPointSerializer()
+    transfer_count = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Squad
@@ -122,6 +134,9 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
             "gk",
             "squad_players",
             "substitutes",
+
+            "round_point",
+            "transfer_count",
         )
 
     @staticmethod
@@ -159,6 +174,11 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
             is_substitution=True
         ).order_by("position__position__remote_id", "position__ordering")
         return _DefaultSquadPlayerSerializer(substitutes, many=True).data
+
+    @staticmethod
+    def get_transfer_count(obj):
+        total_count = models.Transfer.objects.filter(squad_player__squad_id=obj.id).count()
+        return total_count
 
 
 class TeamDetailSerializer(serializers.ModelSerializer):
