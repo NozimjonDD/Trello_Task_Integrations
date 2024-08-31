@@ -53,9 +53,5 @@ class AccountDetailSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_game_week(obj):
-        current_round = football_models.Round.objects.filter(
-            league__remote_id=settings.PREMIER_LEAGUE_ID,
-            season__is_current=True,
-            is_current=True,
-        ).first()
+        current_round = football_models.Round.get_coming_gw()
         return common_serializers.CommonRoundSerializer(current_round).data

@@ -156,7 +156,7 @@ class Squad(BaseModel):
             pass
 
         try:
-            current_squad = cls.objects.get(team=team, round=football_models.Round.get_current_gw())
+            current_squad = cls.objects.get(team=team, round=football_models.Round.get_coming_gw())
         except cls.DoesNotExist:
             current_squad = None
 

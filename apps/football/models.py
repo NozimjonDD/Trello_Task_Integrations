@@ -102,7 +102,7 @@ class Round(FootballBaseModel):
 
     @classmethod
     def get_coming_gw(cls):
-        gw = cls.objects.filter(starting_at__gt=timezone.now().today()).order_by("starting_at").first()
+        gw = cls.objects.filter(starting_at__gte=timezone.now().today()).order_by("starting_at").first()
         return gw
 
 
