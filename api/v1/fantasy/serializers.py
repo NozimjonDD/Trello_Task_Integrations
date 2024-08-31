@@ -81,8 +81,6 @@ class _TeamPlayerSerializer(serializers.ModelSerializer):
 
 
 class _SquadPRoundPointSerializer(serializers.ModelSerializer):
-    total_point = serializers.IntegerField()
-
     class Meta:
         model = models.SquadPlayerRoundPoint
         fields = (
@@ -93,8 +91,6 @@ class _SquadPRoundPointSerializer(serializers.ModelSerializer):
 
 
 class _SquadRoundPointSerializer(serializers.ModelSerializer):
-    total_point = serializers.IntegerField()
-
     class Meta:
         model = models.TeamRoundPoint
         fields = (
