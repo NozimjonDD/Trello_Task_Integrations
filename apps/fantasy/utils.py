@@ -194,8 +194,9 @@ def update_fixture_player_rnd_points(fixture):
         player_point.total_point = player_point.calculate_total_point()
         player_point.save()
 
-        # update squad players points
+        # update squad players, team round points
         update_squad_player_points(player_point)
+        update_squad_round_points(player_point)
 
 
 def update_squad_player_points(player_point):
@@ -217,3 +218,26 @@ def update_squad_player_points(player_point):
                 round_id=player_point.round_id,
                 player_point=player_point,
             )
+
+
+def update_squad_round_points(player_point):
+    rnd = player_point.round
+    squad_player_points = models.SquadPlayerRoundPoint.objects.filter(player_point=player_point)
+    squad_ids = squad_player_points.values("squad_player__squad_id").distinct()
+    squads = models.Squad.objects.filter(
+        round_id=rnd.pk,
+        pk__in=squad_ids,
+    )
+
+    for squad in squads:
+        if hasattr(squad, "round_point"):
+            squad.round_point.total_point = squad.round_point.calculate_total_point()
+            squad.round_point.save(update_fields=["total_point"])
+        else:
+            round_point = models.TeamRoundPoint.objects.create(
+                team_id=squad.team_id,
+                squad_id=squad.pk,
+                round_id=rnd.pk,
+            )
+            round_point.total_point = round_point.calculate_total_point()
+            round_point.save()

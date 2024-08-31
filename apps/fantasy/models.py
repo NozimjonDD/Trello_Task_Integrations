@@ -588,3 +588,12 @@ class TeamRoundPoint(BaseModel):
 
     def __str__(self):
         return f"{self.team} - {self.round} - {self.total_point}"
+
+    def calculate_total_point(self):
+        data = SquadPlayerRoundPoint.objects.filter(
+            squad_player__squad_id=self.squad_id,
+            round_id=self.round_id,
+        ).aggregate(
+            total_point=models.Sum("total_point")
+        )
+        return data["total_point"] or 0
