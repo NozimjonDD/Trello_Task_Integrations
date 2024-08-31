@@ -25,6 +25,7 @@ class PlayerImageFormetion(serializers.ModelSerializer):
 
 class CommonClubSerializer(serializers.ModelSerializer):
     logo = serializers.URLField(source="logo_path")
+    kit = serializers.ImageField(source="kit_home")
 
     class Meta:
         model = football_models.Club
@@ -33,6 +34,7 @@ class CommonClubSerializer(serializers.ModelSerializer):
             "name",
             "short_name",
             "logo",
+            "kit",
             # "kit_home",
             # "kit_away",
             "founded_year",
@@ -42,10 +44,10 @@ class CommonClubSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
 
         # if Round.objects.filter(fixtures__away_club)
-        if instance.kit_home:
-            data['kit'] = PlayerImageFormetion(instance, context=self.context, many=False).data
-        else:
-            pass
+        # if instance.kit_home:
+        #     data['kit'] = PlayerImageFormetion(instance, context=self.context, many=False).data
+        # else:
+        #     pass
 
         data['game_location'] = "home"
 
