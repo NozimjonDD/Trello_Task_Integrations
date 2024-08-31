@@ -55,6 +55,7 @@ class TeamCreateSerializer(serializers.ModelSerializer):
             team=instance,
             formation=models.Formation.objects.get(scheme="4-3-3"),
             is_default=True,
+            round=football_models.Round.get_coming_gw(),
         )
         for f_position in models.FormationPosition.objects.filter(formation__scheme="4-3-3"):
             models.SquadPlayer.objects.create(
@@ -79,9 +80,20 @@ class _TeamPlayerSerializer(serializers.ModelSerializer):
         )
 
 
+class _SquadPRoundPointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SquadPlayerRoundPoint
+        fields = (
+            "id",
+            "round",
+            "total_point",
+        )
+
+
 class _DefaultSquadPlayerSerializer(serializers.ModelSerializer):
     team_player = _TeamPlayerSerializer(source="player")
     team_position = common_serializers.CommonFormationPositionSerializer(source="position")
+    round_point = _SquadPRoundPointSerializer()
 
     class Meta:
         model = models.SquadPlayer
@@ -91,6 +103,7 @@ class _DefaultSquadPlayerSerializer(serializers.ModelSerializer):
             "team_player",
             "is_captain",
             "is_substitution",
+            "round_point",
         )
 
 
@@ -149,7 +162,7 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
 
 
 class TeamDetailSerializer(serializers.ModelSerializer):
-    default_squad = _DefaultSquadSerializer(read_only=True)
+    default_squad = serializers.SerializerMethodField()
 
     # team_players = _TeamPlayerSerializer(many=True)
 
@@ -166,6 +179,20 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
+
+    def get_default_squad(self, obj):
+        rnd_id = self.context["round"]
+        try:
+            rnd = football_models.Round.objects.get(id=int(rnd_id))
+        except (TypeError, football_models.Round.DoesNotExist):
+            rnd = football_models.Round.get_coming_gw()
+
+        if rnd.starting_at > football_models.Round.get_coming_gw().starting_at:
+            rnd = football_models.Round.get_coming_gw()
+
+        squad = models.Squad.get_or_create_gw_squad(obj, rnd)
+
+        return _DefaultSquadSerializer(squad, many=False).data
 
 
 class SquadDetailUpdateSerializer(serializers.ModelSerializer):

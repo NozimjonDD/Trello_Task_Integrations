@@ -1,4 +1,5 @@
 from django.db import models
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 from apps.common.data import (
@@ -130,6 +131,7 @@ class Squad(BaseModel):
         db_table = "fantasy_squad"
         verbose_name = _("Squad")
         verbose_name_plural = _("Squads")
+        unique_together = ("team", "round",)
 
     team = models.ForeignKey(to="fantasy.Team", on_delete=models.CASCADE, related_name="squads", verbose_name=_("Team"))
     round = models.ForeignKey(
@@ -139,6 +141,61 @@ class Squad(BaseModel):
         to="fantasy.Formation", on_delete=models.SET_NULL, null=True, verbose_name=_("Formation"), related_name="+"
     )
     is_default = models.BooleanField(verbose_name=_("Is default squad"), default=False)
+
+    @classmethod
+    @transaction.atomic
+    def get_or_create_gw_squad(cls, team, rnd):
+        """ If squad doesn't exists then duplicate current_squad to new round. """
+
+        from apps.football import models as football_models
+
+        try:
+            squad = cls.objects.get(team=team, round=rnd)
+            return squad
+        except cls.DoesNotExist:
+            pass
+
+        try:
+            current_squad = cls.objects.get(team=team, round=football_models.Round.get_current_gw())
+        except cls.DoesNotExist:
+            current_squad = None
+
+        if current_squad:
+            formation = current_squad.formation
+        else:
+            formation = Formation.objects.get(scheme="4-3-3")
+
+        squad = cls.objects.create(
+            team=team,
+            round=rnd,
+            formation=formation,
+        )
+        cls.objects.filter(
+            team_id=team.pk,
+            round_id=football_models.Round.get_coming_gw().pk,
+        ).update(is_default=True)
+        cls.objects.exclude(
+            team_id=team.pk,
+            round_id=football_models.Round.get_coming_gw().pk,
+        ).update(is_default=False)
+
+        if current_squad:
+            for player in current_squad.players.all():
+                SquadPlayer.objects.create(
+                    squad=squad,
+                    player=player.player,
+                    position=player.position,
+                    is_captain=player.is_captain,
+                    is_substitution=player.is_substitution,
+                )
+        else:
+            for position in formation.positions.all():
+                SquadPlayer.objects.create(
+                    squad=squad,
+                    position=position,
+                    is_substitution=position.is_substitution,
+                )
+        return squad
 
     def __str__(self):
         return f"{self.team} - {self.round}"

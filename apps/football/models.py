@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 from apps.common import utils as common_utils
 from apps.common.models import BaseModel
@@ -93,6 +94,16 @@ class Round(FootballBaseModel):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def get_current_gw(cls):
+        gw = cls.objects.filter(is_current=True).first()
+        return gw
+
+    @classmethod
+    def get_coming_gw(cls):
+        gw = cls.objects.filter(starting_at__gt=timezone.now().today()).order_by("starting_at").first()
+        return gw
 
 
 class FixtureState(FootballBaseModel):

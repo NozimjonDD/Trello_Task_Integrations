@@ -1,6 +1,8 @@
 from django.db.models import Exists, Q, OuterRef
 from rest_framework import generics, permissions
-from rest_framework.permissions import AllowAny
+
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from apps.fantasy import models
 from apps.common import data
@@ -28,6 +30,14 @@ class TeamCreateAPIView(generics.CreateAPIView):
     serializer_class = serializers.TeamCreateSerializer
 
 
+round_param = openapi.Parameter(
+    "round",
+    openapi.IN_QUERY,
+    description="Round number",
+    type=openapi.TYPE_INTEGER,
+)
+
+
 class TeamDetailAPIView(generics.RetrieveAPIView):
     queryset = models.Team.objects.filter(is_deleted=False)
     serializer_class = serializers.TeamDetailSerializer
@@ -36,6 +46,15 @@ class TeamDetailAPIView(generics.RetrieveAPIView):
     def get_queryset(self):
         qs = self.queryset.filter(user_id=self.request.user.pk)
         return qs
+
+    @swagger_auto_schema(manual_parameters=[round_param])
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["round"] = self.request.query_params.get("round")
+        return context
 
 
 # ========================== SQUAD START ==========================
