@@ -174,8 +174,7 @@ class Squad(BaseModel):
             team_id=team.pk,
             round_id=football_models.Round.get_coming_gw().pk,
         ).update(is_default=True)
-        cls.objects.exclude(
-            team_id=team.pk,
+        cls.objects.filter(team_id=team.pk).exclude(
             round_id=football_models.Round.get_coming_gw().pk,
         ).update(is_default=False)
 
