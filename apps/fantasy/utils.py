@@ -163,7 +163,7 @@ def update_fixture_player_rnd_points(fixture):
                 ).count()
         else:
             if subs:
-                goals_conceded = fixture_events.filter(type__developer_name="GOAL", minute__gte=subs.minute).exclude(
+                goals_conceded = fixture_events.filter(type__developer_name="GOAL").exclude(
                     club__id=player.club_id
                 ).count()
             else:
@@ -172,7 +172,10 @@ def update_fixture_player_rnd_points(fixture):
         player_point.clean_sheet = 0
         if goals_conceded is not None:
             if fixture.state.state == "FT" and goals_conceded == 0:
-                player_point.clean_sheet = g_clean_sheet
+                if is_lineup and not subs:
+                    player_point.clean_sheet = g_clean_sheet
+                elif not is_lineup and subs:
+                    player_point.clean_sheet = g_clean_sheet
             elif goals_conceded >= 2:
                 player_point.goal_conceded = g_goal_conceded_more_2
 
@@ -183,7 +186,7 @@ def update_fixture_player_rnd_points(fixture):
         ).count() * g_assist
 
         # saves
-        if is_lineup:
+        if is_lineup and player.position.short_name == "GK":
             if not subs:
                 saves_count = fixture_stats.filter(club__id=player.club_id, type__developer_name="SAVES").first().value
                 if saves_count and saves_count <= 3:
