@@ -221,6 +221,8 @@ def update_squad_player_points(player_point):
     )
     for player in squad_players:
         total_point = player_point.total_point
+        if player.is_captain:
+            total_point *= 2
         # TODO: check TARIFF and update total_point
 
         if hasattr(player, "round_point"):
