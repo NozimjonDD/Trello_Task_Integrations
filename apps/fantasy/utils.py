@@ -113,27 +113,30 @@ def update_fixture_player_rnd_points(fixture):
             g_brace = 1
             g_hat_trick = 2
 
-        # 70 min
+        # minutes played
         subs = fixture_events.filter(
             type=football_models.SportMonksType.objects.get(developer_name="SUBSTITUTION"),
         ).filter(Q(player_id=player.pk) | Q(related_player_id=player.pk)).last()
 
+        minutes_played = 0
         if is_lineup:
+            minutes_played = 1
             if subs:
                 if subs.minute <= 70:
-                    player_point.minutes_played = g_upto_70
+                    minutes_played = g_upto_70
                 else:
-                    player_point.minutes_played = g_more_70
+                    minutes_played = g_more_70
             else:
-                player_point.minutes_played = g_more_70
+                if fixture.state.state == "FT":
+                    minutes_played = 2
         else:
             if subs:
                 if subs.minute <= 20:
-                    player_point.minutes_played = g_more_70
+                    minutes_played = g_more_70
                 else:
-                    player_point.minutes_played = g_upto_70
-            else:
-                player_point.minutes_played = 0
+                    minutes_played = g_upto_70
+
+        player_point.minutes_played = minutes_played
 
         # goals
         goals = fixture_events.filter(player_id=player.pk, type__developer_name="GOAL").count()
@@ -144,8 +147,10 @@ def update_fixture_player_rnd_points(fixture):
         elif goals == 3:
             player_point.goal += g_hat_trick
 
-        if subs:
-            if is_lineup:
+        # goals conceded
+        goals_conceded = None
+        if is_lineup:
+            if subs:
                 goals_conceded = fixture_events.filter(
                     type__developer_name="GOAL",
                     minute__lte=subs.minute
@@ -153,32 +158,38 @@ def update_fixture_player_rnd_points(fixture):
                     club__id=player.club_id
                 ).count()
             else:
-                goals_conceded = fixture_events.filter(type__developer_name="GOAL", minute__gte=subs.minute).exclude(
+                goals_conceded = fixture_events.filter(type__developer_name="GOAL", ).exclude(
                     club__id=player.club_id
                 ).count()
         else:
-            goals_conceded = fixture_events.filter(type__developer_name="GOAL", ).exclude(
-                club__id=player.club_id
-            ).count()
+            if subs:
+                goals_conceded = fixture_events.filter(type__developer_name="GOAL", minute__gte=subs.minute).exclude(
+                    club__id=player.club_id
+                ).count()
+            else:
+                pass
 
         player_point.clean_sheet = 0
-        if goals_conceded == 0:
-            player_point.clean_sheet = g_clean_sheet
-        elif goals_conceded >= 2:
-            player_point.goal_conceded = g_goal_conceded_more_2
+        if goals_conceded is not None:
+            if fixture.state.state == "FT" and goals_conceded == 0:
+                player_point.clean_sheet = g_clean_sheet
+            elif goals_conceded >= 2:
+                player_point.goal_conceded = g_goal_conceded_more_2
 
         # assists
-        player_point.assist = fixture_events.filter(related_player_id=player.pk,
-                                                    type__developer_name="GOAL").count() * g_assist
+        player_point.assist = fixture_events.filter(
+            related_player_id=player.pk,
+            type__developer_name="GOAL"
+        ).count() * g_assist
 
         # saves
         if is_lineup:
             if not subs:
                 saves_count = fixture_stats.filter(club__id=player.club_id).first().value
                 if saves_count and saves_count <= 3:
-                    player_point.saves = g_save_upto_3
+                    player_point.saves = saves_count * g_save_upto_3
                 elif saves_count and saves_count > 3:
-                    player_point.saves = g_save_more_3
+                    player_point.saves = saves_count * g_save_more_3
         else:
             pass
 
