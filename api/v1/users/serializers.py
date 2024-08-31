@@ -1,12 +1,10 @@
-from django.conf import settings
-
 from rest_framework import serializers
 
-from apps.users import models
-from apps.fantasy import models as fantasy_models
-from apps.football import models as football_models
-
 from api.v1 import common_serializers
+from apps.fantasy import models as fantasy_models
+from apps.finance.models import Tariff, TariffCase
+from apps.football import models as football_models
+from apps.users import models
 
 
 class _AccountSettingsSerializer(serializers.ModelSerializer):
@@ -55,3 +53,33 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     def get_game_week(obj):
         current_round = football_models.Round.get_coming_gw()
         return common_serializers.CommonRoundSerializer(current_round).data
+
+
+class UserTariffCaseListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TariffCase
+        fields = (
+            "id",
+            "title",
+            "tariff",
+            "ordering",
+            "amount",
+        )
+
+
+class UserTariffListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tariff
+        fields = (
+            "id",
+            "title",
+            "description",
+            "type",
+            "annual_price",
+            "monthly_price",
+        )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["tariff_cases"] = UserTariffCaseListSerializer(instance.tariff_cases.all(), many=True).data
+        return data
