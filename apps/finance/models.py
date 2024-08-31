@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
+from apps import users
 from apps.common.data import TariffTypeChoices
 from apps.common.models import BaseModel
 
@@ -12,6 +13,7 @@ class Tariff(BaseModel):
         verbose_name = "Tariff"
         verbose_name_plural = "Tariffs"
 
+    user = models.ForeignKey(to="users.User", on_delete=models.CASCADE, related_name="tariff", null=True)
     title = models.CharField(max_length=200, verbose_name=_("Title"), null=True)
     description = models.TextField(verbose_name=_("description"))
     type = models.CharField(choices=TariffTypeChoices.choices, default=TariffTypeChoices.FREE, max_length=100)
