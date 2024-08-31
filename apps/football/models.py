@@ -278,7 +278,8 @@ class Club(FootballBaseModel):
     venue_id = models.IntegerField()
     logo = models.ImageField(upload_to="football/club/logo/", null=True, blank=True)
     logo_path = models.URLField()
-    kit = models.ImageField(upload_to="football/club/kit/", null=True, blank=True)
+    kit_home = models.ImageField(upload_to="football/club/kit_home/", null=True, blank=True)
+    kit_away = models.ImageField(upload_to="football/club/kit_away/", null=True, blank=True)
     founded_year = models.PositiveSmallIntegerField()
     type = models.CharField(verbose_name=_("Club type"), max_length=100, null=True, blank=True)
 

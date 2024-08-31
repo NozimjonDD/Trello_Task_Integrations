@@ -35,3 +35,9 @@ class TransferTypeChoices(models.TextChoices):
     SELL = "sell", _("Sell")
     BUY = "buy", _("Buy")
     SWAP = "swap", _("Swap")
+
+
+class TariffTypeChoices(models.TextChoices):
+    FREE = 'free', _("Free")
+    STANDARD = 'standard', _("Standard")
+    ADVANCED = "advanced", _("Advanced")
