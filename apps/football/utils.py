@@ -397,6 +397,8 @@ def update_fixture_by_id(fixture_id):
                 }
             )
 
+        lineup_remote_ids = [i["id"] for i in fixture["lineups"]]
+        models.Lineup.objects.filter(fixture_id=fixture_obj.pk).exclude(remote_id__in=lineup_remote_ids).delete()
         for lineup in fixture["lineups"]:
             try:
                 models.Lineup.objects.update_or_create(
