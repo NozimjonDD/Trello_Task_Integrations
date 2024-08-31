@@ -1,4 +1,5 @@
 from django.db import models
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 from apps.common.data import (
@@ -130,6 +131,7 @@ class Squad(BaseModel):
         db_table = "fantasy_squad"
         verbose_name = _("Squad")
         verbose_name_plural = _("Squads")
+        unique_together = ("team", "round",)
 
     team = models.ForeignKey(to="fantasy.Team", on_delete=models.CASCADE, related_name="squads", verbose_name=_("Team"))
     round = models.ForeignKey(
@@ -139,6 +141,60 @@ class Squad(BaseModel):
         to="fantasy.Formation", on_delete=models.SET_NULL, null=True, verbose_name=_("Formation"), related_name="+"
     )
     is_default = models.BooleanField(verbose_name=_("Is default squad"), default=False)
+
+    @classmethod
+    @transaction.atomic
+    def get_or_create_gw_squad(cls, team, rnd):
+        """ If squad doesn't exists then duplicate current_squad to new round. """
+
+        from apps.football import models as football_models
+
+        try:
+            squad = cls.objects.get(team=team, round=rnd)
+            return squad
+        except cls.DoesNotExist:
+            pass
+
+        try:
+            current_squad = cls.objects.get(team=team, round=football_models.Round.get_coming_gw())
+        except cls.DoesNotExist:
+            current_squad = None
+
+        if current_squad:
+            formation = current_squad.formation
+        else:
+            formation = Formation.objects.get(scheme="4-3-3")
+
+        squad = cls.objects.create(
+            team=team,
+            round=rnd,
+            formation=formation,
+        )
+        cls.objects.filter(
+            team_id=team.pk,
+            round_id=football_models.Round.get_coming_gw().pk,
+        ).update(is_default=True)
+        cls.objects.filter(team_id=team.pk).exclude(
+            round_id=football_models.Round.get_coming_gw().pk,
+        ).update(is_default=False)
+
+        if current_squad:
+            for player in current_squad.players.all():
+                SquadPlayer.objects.create(
+                    squad=squad,
+                    player=player.player,
+                    position=player.position,
+                    is_captain=player.is_captain,
+                    is_substitution=player.is_substitution,
+                )
+        else:
+            for position in formation.positions.all():
+                SquadPlayer.objects.create(
+                    squad=squad,
+                    position=position,
+                    is_substitution=position.is_substitution,
+                )
+        return squad
 
     def __str__(self):
         return f"{self.team} - {self.round}"
@@ -510,13 +566,20 @@ class TeamRoundPoint(BaseModel):
         related_name="round_points",
         verbose_name=_("Team"),
     )
+    squad = models.OneToOneField(
+        to="fantasy.Squad",
+        on_delete=models.SET_NULL,
+        related_name="round_point",
+        verbose_name=_("Squad"),
+        null=True,
+    )
     round = models.ForeignKey(
         to="football.Round",
         on_delete=models.CASCADE,
         related_name="+",
         verbose_name=_("Round"),
     )
-    point = models.DecimalField(
+    total_point = models.DecimalField(
         verbose_name=_("Points"),
         max_digits=18,
         decimal_places=2,
@@ -524,4 +587,13 @@ class TeamRoundPoint(BaseModel):
     )
 
     def __str__(self):
-        return f"{self.team} - {self.round} - {self.point}"
+        return f"{self.team} - {self.round} - {self.total_point}"
+
+    def calculate_total_point(self):
+        data = SquadPlayerRoundPoint.objects.filter(
+            squad_player__squad_id=self.squad_id,
+            round_id=self.round_id,
+        ).aggregate(
+            total_point=models.Sum("total_point")
+        )
+        return data["total_point"] or 0

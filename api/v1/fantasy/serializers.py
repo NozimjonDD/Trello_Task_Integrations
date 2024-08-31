@@ -55,6 +55,7 @@ class TeamCreateSerializer(serializers.ModelSerializer):
             team=instance,
             formation=models.Formation.objects.get(scheme="4-3-3"),
             is_default=True,
+            round=football_models.Round.get_coming_gw(),
         )
         for f_position in models.FormationPosition.objects.filter(formation__scheme="4-3-3"):
             models.SquadPlayer.objects.create(
@@ -79,9 +80,30 @@ class _TeamPlayerSerializer(serializers.ModelSerializer):
         )
 
 
+class _SquadPRoundPointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SquadPlayerRoundPoint
+        fields = (
+            "id",
+            "round",
+            "total_point",
+        )
+
+
+class _SquadRoundPointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.TeamRoundPoint
+        fields = (
+            "id",
+            "round",
+            "total_point",
+        )
+
+
 class _DefaultSquadPlayerSerializer(serializers.ModelSerializer):
     team_player = _TeamPlayerSerializer(source="player")
     team_position = common_serializers.CommonFormationPositionSerializer(source="position")
+    round_point = _SquadPRoundPointSerializer()
 
     class Meta:
         model = models.SquadPlayer
@@ -91,6 +113,7 @@ class _DefaultSquadPlayerSerializer(serializers.ModelSerializer):
             "team_player",
             "is_captain",
             "is_substitution",
+            "round_point",
         )
 
 
@@ -100,6 +123,8 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
     gk = serializers.SerializerMethodField()
     squad_players = serializers.SerializerMethodField()
     substitutes = serializers.SerializerMethodField()
+    round_point = _SquadRoundPointSerializer()
+    transfer_count = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Squad
@@ -109,10 +134,12 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
             "gk",
             "squad_players",
             "substitutes",
+
+            "round_point",
+            "transfer_count",
         )
 
-    @staticmethod
-    def get_squad_players(obj):
+    def get_squad_players(self, obj):
         squad_players = obj.players.filter(
             is_substitution=False
         ).exclude(position__position__short_name="GK").order_by("position__position__remote_id", "position__ordering")
@@ -126,30 +153,33 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
         for i in scheme.split("-"):
             section = []
             for j in range(int(i)):
-                section.append(_DefaultSquadPlayerSerializer(squad_players[cnt], many=False).data)
+                section.append(_DefaultSquadPlayerSerializer(squad_players[cnt], many=False, context=self.context).data)
                 cnt += 1
             result.append(section)
 
         return result
 
-    @staticmethod
-    def get_gk(obj):
+    def get_gk(self, obj):
         gk = obj.players.filter(
             is_substitution=False,
             position__position__short_name="GK"
         ).first()
-        return _DefaultSquadPlayerSerializer(gk, many=False).data
+        return _DefaultSquadPlayerSerializer(gk, many=False, context=self.context).data
 
-    @staticmethod
-    def get_substitutes(obj):
+    def get_substitutes(self, obj):
         substitutes = obj.players.filter(
             is_substitution=True
         ).order_by("position__position__remote_id", "position__ordering")
-        return _DefaultSquadPlayerSerializer(substitutes, many=True).data
+        return _DefaultSquadPlayerSerializer(substitutes, many=True, context=self.context).data
+
+    @staticmethod
+    def get_transfer_count(obj):
+        total_count = models.Transfer.objects.filter(squad_player__squad_id=obj.id).count()
+        return total_count
 
 
 class TeamDetailSerializer(serializers.ModelSerializer):
-    default_squad = _DefaultSquadSerializer(read_only=True)
+    default_squad = serializers.SerializerMethodField()
 
     # team_players = _TeamPlayerSerializer(many=True)
 
@@ -166,6 +196,20 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
+
+    def get_default_squad(self, obj):
+        rnd_id = self.context["round"]
+        try:
+            rnd = football_models.Round.objects.get(id=int(rnd_id))
+        except (TypeError, football_models.Round.DoesNotExist):
+            rnd = football_models.Round.get_coming_gw()
+
+        if rnd.starting_at > football_models.Round.get_coming_gw().starting_at:
+            rnd = football_models.Round.get_coming_gw()
+
+        squad = models.Squad.get_or_create_gw_squad(obj, rnd)
+
+        return _DefaultSquadSerializer(squad, many=False, context=self.context).data
 
 
 class SquadDetailUpdateSerializer(serializers.ModelSerializer):
