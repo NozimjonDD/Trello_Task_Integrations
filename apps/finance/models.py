@@ -27,8 +27,9 @@ class Tariff(BaseModel):
 class TariffCase(BaseModel):
     class Meta:
         db_table = "tariff_case"
-        verbose_name = "Tariff_Case"
-        verbose_name_plural = "Tariff_Cases"
+        verbose_name = "Tariff Case"
+        verbose_name_plural = "Tariff Cases"
+    tariff = models.ForeignKey(to="Tariff", on_delete=models.DO_NOTHING, related_name="tariff_cases", null=True)
     title = models.CharField(max_length=200, verbose_name=_("Title"), null=True)
     ordering = models.IntegerField(default=1)
     amount = models.IntegerField(null=True, blank=True)
