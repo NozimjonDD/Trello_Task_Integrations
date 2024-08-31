@@ -367,8 +367,12 @@ def update_fixture_by_id(fixture_id):
                         "type": models.SportMonksType.objects.get(remote_id=event["type_id"]),
                         "sub_type": sub_type,
                         "club": models.Club.objects.get(remote_id=event["participant_id"]),
-                        "player": models.Player.objects.get(remote_id=event["player_id"]),
-                        "related_player": models.Player.objects.get(remote_id=event["related_player_id"]),
+                        "player": models.Player.objects.get(
+                            remote_id=event["player_id"]
+                        ) if event["player_id"] else None,
+                        "related_player": models.Player.objects.get(
+                            remote_id=event["related_player_id"]
+                        ) if event["related_player_id"] else None,
                         "minute": event["minute"],
                         "extra_minute": event["extra_minute"],
                         "injured": event["injured"],
@@ -393,21 +397,23 @@ def update_fixture_by_id(fixture_id):
                 }
             )
 
-        pprint(fixture["lineups"])
-        print("=" * 500)
-        try:
-            for lineup in fixture["lineups"]:
+        for lineup in fixture["lineups"]:
+            try:
                 models.Lineup.objects.update_or_create(
                     remote_id=lineup["id"],
                     defaults={
                         "fixture": fixture_obj,
                         "type": models.SportMonksType.objects.get(remote_id=lineup["type_id"]),
-                        "club": models.Club.objects.get(remote_id=lineup["team_id"]),
-                        "player": models.Player.objects.get(remote_id=lineup["player_id"]),
+                        "club": models.Club.objects.get(
+                            remote_id=lineup["team_id"]
+                        ) if lineup["team_id"] else None,
+                        "player": models.Player.objects.get(
+                            remote_id=lineup["player_id"]
+                        ) if lineup["player_id"] else None,
                     }
                 )
-        except (models.Player.DoesNotExist, models.Club.DoesNotExist, models.SportMonksType.DoesNotExist):
-            pass
+            except (models.Player.DoesNotExist, models.Club.DoesNotExist, models.SportMonksType.DoesNotExist):
+                continue
 
 
 def update_clubs_by_season(season_id):

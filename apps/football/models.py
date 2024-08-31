@@ -195,6 +195,8 @@ class FixtureEvent(FootballBaseModel):
         verbose_name=_("Player"),
         on_delete=models.CASCADE,
         related_name="fixture_events",
+        null=True,
+        blank=True,
     )
     related_player = models.ForeignKey(
         to="football.Player",
