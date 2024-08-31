@@ -52,8 +52,6 @@ def update_fixture_player_rnd_points(fixture):
             if lineup.type.developer_name == "LINEUP":
                 is_lineup = True
         except football_models.Lineup.DoesNotExist:
-            if player.pk == 14247:
-                print("=" * 300)
             player_point.total_point = 0
             player_point.minutes_played = 0
             player_point.clean_sheet = 0
@@ -163,6 +161,7 @@ def update_fixture_player_rnd_points(fixture):
                 club__id=player.club_id
             ).count()
 
+        player_point.clean_sheet = 0
         if goals_conceded == 0:
             player_point.clean_sheet = g_clean_sheet
         elif goals_conceded >= 2:
@@ -184,11 +183,16 @@ def update_fixture_player_rnd_points(fixture):
             pass
 
         # yellow_card
-        player_point.yellow_card = fixture_events.filter(player_id=player.pk,
-                                                         type__developer_name="YELLOWCARD").count() * g_yellow_card
+        player_point.yellow_card = fixture_events.filter(
+            player_id=player.pk,
+            type__developer_name="YELLOWCARD"
+        ).count() * g_yellow_card
 
+        # red_card
         player_point.red_card = fixture_events.filter(
-            player_id=player.pk, type__developer_name="REDCARD"
+            player_id=player.pk,
+        ).filter(
+            Q(type__developer_name="REDCARD") | Q(type__developer_name="YELLOWREDCARD")
         ).count() * g_red_card
 
         player_point.total_point = player_point.calculate_total_point()
