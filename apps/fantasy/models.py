@@ -158,7 +158,7 @@ class Squad(BaseModel):
         try:
             current_squad = cls.objects.get(team=team, round=football_models.Round.get_coming_gw())
         except cls.DoesNotExist:
-            current_squad = None
+            current_squad = cls.objects.filter(team=team, is_default=True).last()
 
         if current_squad:
             formation = current_squad.formation
