@@ -13,6 +13,5 @@ class TariffListAPIView(ListAPIView):
 
 
 class TariffJoinAPIView(CreateAPIView):
-    queryset = Tariff.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = TariffJoinSerializer
