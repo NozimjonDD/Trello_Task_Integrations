@@ -126,6 +126,7 @@ class LeagueParticipantAdmin(admin.ModelAdmin):
 class PlayerRoundPointAdmin(admin.ModelAdmin):
     list_display = (
         "player",
+        "get_player_club",
         "round",
         "total_point",
 
@@ -147,9 +148,14 @@ class PlayerRoundPointAdmin(admin.ModelAdmin):
     search_fields = (
         "player__first_name", "player__full_name", "player__common_name", "round__name", "total_point", "id",
     )
-    list_filter = ("round", "player__position", "created_at",)
+    list_filter = ("round", "player__position", "player__club", "created_at",)
     autocomplete_fields = ("player", "round",)
     exclude = ("is_deleted", "deleted_at",)
+
+    def get_player_club(self, obj):
+        return obj.player.club
+
+    get_player_club.short_description = _("Club")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request).select_related("player", "round", )
