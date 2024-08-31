@@ -145,8 +145,7 @@ class PlayerRoundPointAdmin(admin.ModelAdmin):
     )
     list_display_links = ("player", "id",)
     search_fields = (
-        "player__first_name", "player__full_name", "player__common_name", "round__title", "total_point", "id",
-        "remote_id",
+        "player__first_name", "player__full_name", "player__common_name", "round__name", "total_point", "id",
     )
     list_filter = ("round", "player__position", "created_at",)
     autocomplete_fields = ("player", "round",)
@@ -154,6 +153,29 @@ class PlayerRoundPointAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request).select_related("player", "round", )
+        return qs
+
+
+@admin.register(models.SquadPlayerRoundPoint)
+class SquadPlayerRoundPointAdmin(admin.ModelAdmin):
+    list_display = (
+        "squad_player",
+        "round",
+        "total_point",
+        "created_at",
+        "id",
+    )
+    list_display_links = ("squad_player", "id",)
+    search_fields = (
+        "squad_player__squad__team__name", "squad_player__player__player__full_name", "round__title", "total_point",
+        "id",
+        "remote_id",
+    )
+    autocomplete_fields = ("squad_player", "round", "player_point",)
+    exclude = ("is_deleted", "deleted_at",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related("squad_player", "round", )
         return qs
 
 

@@ -85,6 +85,22 @@ class FixtureEventInlineAdmin(admin.StackedInline):
         return False
 
 
+class LineupInlineAdmin(admin.StackedInline):
+    model = models.Lineup
+    extra = 0
+    exclude = ("is_deleted", "deleted_at",)
+    autocomplete_fields = ("fixture", "type", "club", "player",)
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(models.Fixture)
 class FixtureAdmin(admin.ModelAdmin):
     list_display = (
@@ -94,7 +110,7 @@ class FixtureAdmin(admin.ModelAdmin):
     autocomplete_fields = ("season", "round", "state", "home_club", "away_club",)
     list_filter = ("round",)
     actions = (actions.update_fixture_details, actions.update_fixture_player_round_points,)
-    inlines = (FixtureEventInlineAdmin,)
+    inlines = (FixtureEventInlineAdmin, LineupInlineAdmin,)
 
     def result_score(self, obj):
         if obj.home_club_score is not None and obj.away_club_score is not None:

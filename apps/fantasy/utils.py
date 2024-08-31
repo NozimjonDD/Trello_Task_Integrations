@@ -18,9 +18,13 @@ def generate_league_invite_code(length=6):
 
 @transaction.atomic
 def update_fixture_player_rnd_points(fixture):
+    if fixture.state.state == "NS":
+        return
+
     players = football_models.Player.objects.filter(
         is_deleted=False,
         club__league__remote_id=settings.PREMIER_LEAGUE_ID,
+        position__isnull=False,
     ).filter(
         Q(club_id=fixture.home_club_id) |
         Q(club_id=fixture.away_club_id)
@@ -189,3 +193,27 @@ def update_fixture_player_rnd_points(fixture):
 
         player_point.total_point = player_point.calculate_total_point()
         player_point.save()
+
+        # update squad players points
+        update_squad_player_points(player_point)
+
+
+def update_squad_player_points(player_point):
+    squad_players = models.SquadPlayer.objects.filter(
+        player__player_id=player_point.player_id,
+        squad__round_id=player_point.round_id,
+    )
+    for player in squad_players:
+        total_point = player_point.total_point
+        # TODO: check TARIFF and update total_point
+
+        if hasattr(player, "round_point"):
+            player.round_point.total_point = total_point
+            player.round_point.save(update_fields=["total_point"])
+        else:
+            models.SquadPlayerRoundPoint.objects.create(
+                squad_player_id=player.pk,
+                total_point=total_point,
+                round_id=player_point.round_id,
+                player_point=player_point,
+            )
