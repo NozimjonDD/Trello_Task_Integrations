@@ -185,7 +185,7 @@ def update_fixture_player_rnd_points(fixture):
         # saves
         if is_lineup:
             if not subs:
-                saves_count = fixture_stats.filter(club__id=player.club_id).first().value
+                saves_count = fixture_stats.filter(club__id=player.club_id, type__developer_name="SAVES").first().value
                 if saves_count and saves_count <= 3:
                     player_point.saves = saves_count * g_save_upto_3
                 elif saves_count and saves_count > 3:
