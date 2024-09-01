@@ -6,7 +6,7 @@ from django.conf import settings
 env = environ.Env()
 env.read_env(".env")
 
-app = Celery("EPL_backend")
+app = Celery("Task_backend")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 
 app.config_from_object(settings)
