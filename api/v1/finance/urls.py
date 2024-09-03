@@ -7,6 +7,7 @@ urlpatterns = [
     path("tariff-join/", views.TariffJoinAPIView.as_view(), name="tariff-join"),
 
     #
-    # path("subscription/", views.SubscriptionAPIView.as_view(), name="subscription-join"),
+    path("list/", views.SubscriptionListAPIView.as_view(), name="subscription-list"),
+    path("subscription/", views.SubscriptionAPIView.as_view(), name="subscription-join"),
 
 ]
