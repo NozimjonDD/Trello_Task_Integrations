@@ -18,4 +18,4 @@ class TariffAdmin(admin.ModelAdmin):
 class TariffAdmin(admin.ModelAdmin):
     list_filter = ("tariff", "created_at",)
     search_fields = ("user__phone_number",)
-    list_display = ("user", "tariff", "total_price",)
+    list_display = ("user", "total_price",)

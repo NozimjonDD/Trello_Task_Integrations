@@ -32,15 +32,16 @@ class SubscriptionAPIView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-        if not self.request.user.subscriptions:
-            # sub = Subscription.objects.update_or_create(
-            #     user_id=season["id"],
-            #     defaults={
-            #         "league": models.League.objects.get(remote_id=season["league_id"]),
-            #         "name": season["name"],
-            #
-            # )
+        user = self.request.user
+        tariff = int(self.request.data['tariff'])
 
-            print(self.request.user.subscriptions)
+        sub, _ = Subscription.objects.update_or_create(
+            user_id=user.id,
+            defaults={
+                "user_id": user.id,
+            }
+
+        )
+        sub.tariff.add(tariff)
 
         return Response({"message": "class A", "count": 33333})
