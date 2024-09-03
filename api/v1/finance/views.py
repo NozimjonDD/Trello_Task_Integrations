@@ -17,7 +17,7 @@ class SubscriptionAPIView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
-        tariff = int(self.request.data['tariff'])
+        tariff = int(self.request.data['tariff_id'])
 
         sub, _ = Subscription.objects.update_or_create(
             user_id=user.id,
