@@ -12,19 +12,13 @@ class TariffListAPIView(ListAPIView):
     serializer_class = TariffListSerializer
 
 
-class TariffJoinAPIView(CreateAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = TariffJoinSerializer
-
-
 class SubscriptionListAPIView(ListAPIView):
     queryset = Subscription.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = SubscriptionListSerilalizer
 
     def get_queryset(self):
-        queryset = self.queryset.all()
-        print(55555555555)
+        queryset = self.queryset.filter(user=self.request.user)
         return queryset
 
 

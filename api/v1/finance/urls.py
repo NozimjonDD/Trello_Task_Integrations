@@ -4,7 +4,6 @@ from . import views
 
 urlpatterns = [
     path("tariff-list/", views.TariffListAPIView.as_view(), name="tariff-list"),
-    path("tariff-join/", views.TariffJoinAPIView.as_view(), name="tariff-join"),
 
     #
     path("subscription/list/", views.SubscriptionListAPIView.as_view(), name="subscription-list"),
