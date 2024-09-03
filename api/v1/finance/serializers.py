@@ -31,3 +31,9 @@ class SubscriptionCreateSerilalizer(serializers.ModelSerializer):
             "tariff",
             "total_price",
         )
+
+        extra_kwargs = {
+            "tariff": {"read_only": True},
+        }
+
+
