@@ -75,8 +75,8 @@ class UserTariffListSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "type",
-            "annual_price",
-            "monthly_price",
+            "price",
+            "discount_price",
         )
 
     def to_representation(self, instance):

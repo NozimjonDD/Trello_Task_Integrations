@@ -16,3 +16,5 @@ class UserTariffListAPIView(generics.ListAPIView):
     queryset = Tariff.objects.all()
     serializer_class = serializers.UserTariffListSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
