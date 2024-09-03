@@ -11,7 +11,7 @@ class TariffCaseAdmin(admin.ModelAdmin):
 
 @admin.register(models.Tariff)
 class TariffAdmin(admin.ModelAdmin):
-    list_display = ("user", "title", "description", "type", "annual_price", "monthly_price",)
+    list_display = ("title", "description", "type", "annual_price", "monthly_price",)
 
 
 @admin.register(models.Subscription)
