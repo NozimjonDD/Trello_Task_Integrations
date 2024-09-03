@@ -12,7 +12,6 @@ class Tariff(BaseModel):
         verbose_name = "Tariff"
         verbose_name_plural = "Tariffs"
 
-    user = models.ForeignKey(to="users.User", on_delete=models.CASCADE, related_name="tariff", null=True)
     title = models.CharField(max_length=200, verbose_name=_("Title"), null=True)
     description = models.TextField(verbose_name=_("description"))
     type = models.CharField(choices=TariffTypeChoices.choices, default=TariffTypeChoices.FREE, max_length=100)
@@ -44,7 +43,7 @@ class Subscription(BaseModel):
         verbose_name = "Subscription"
         verbose_name_plural = "Subscriptions"
 
-    user = models.ForeignKey(to="users.User", on_delete=models.CASCADE, related_name="subscriptions", null=True)
+    user = models.OneToOneField(to="users.User", on_delete=models.CASCADE, related_name="subscriptions", null=True)
     tariff = models.ForeignKey(to="Tariff", on_delete=models.DO_NOTHING, related_name="subscription_tariffs", null=True)
     total_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
 
