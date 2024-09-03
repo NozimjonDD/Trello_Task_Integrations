@@ -22,36 +22,6 @@ class TariffListSerializer(serializers.ModelSerializer):
         return data
 
 
-class TariffDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tariff
-        fields = (
-            "id",
-            "title",
-            "description",
-            "type",
-            "price",
-            "discount_price",
-        )
-
-
-class SubscriptionListSerilalizer(serializers.ModelSerializer):
-    tariffs = TariffDetailSerializer(source="tariff", many=True)
-
-    class Meta:
-        model = Subscription
-        fields = (
-            "id",
-            "user",
-            "tariffs",
-            "total_price",
-        )
-
-    # def get_calc_all_tariff_price(self, obj):
-    #     data = obj.calculate_total_price
-    #     return data
-
-
 class SubscriptionCreateSerilalizer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
