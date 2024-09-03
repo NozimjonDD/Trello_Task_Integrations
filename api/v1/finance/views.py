@@ -14,8 +14,10 @@ class TariffListAPIView(ListAPIView):
 
 class SubscriptionAPIView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = SubscriptionCreateSerilalizer
 
     def post(self, request, *args, **kwargs):
+        print(55555555555)
         user = self.request.user
         tariff = int(self.request.data['tariff_id'])
 
