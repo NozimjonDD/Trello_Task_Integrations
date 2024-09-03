@@ -1,5 +1,5 @@
 from rest_framework import permissions
-from rest_framework.generics import ListAPIView, CreateAPIView, GenericAPIView, ListCreateAPIView
+from rest_framework.generics import ListAPIView, GenericAPIView
 from rest_framework.response import Response
 
 from api.v1.finance.serializers import *
@@ -37,5 +37,6 @@ class SubscriptionAPIView(GenericAPIView):
 
         )
         sub.tariff.add(tariff)
+        # calc = sub.calculate_total_price
 
-        return Response({"message": "class A", "count": 33333})
+        return Response({"user_id": user.id, "plans": sub.tariff.all().values(), "subscription_id": sub.id})

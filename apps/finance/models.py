@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
@@ -15,8 +16,8 @@ class Tariff(BaseModel):
     title = models.CharField(max_length=200, verbose_name=_("Title"), null=True)
     description = models.TextField(verbose_name=_("description"))
     type = models.CharField(choices=TariffTypeChoices.choices, default=TariffTypeChoices.FREE, max_length=100)
-    annual_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
-    monthly_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    discount_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -47,3 +48,10 @@ class Subscription(BaseModel):
     tariff = models.ManyToManyField(to="Tariff", related_name="subscription_tariffs", null=True)
     total_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
 
+    @property
+    def calculate_total_price(self):
+        if self.tariff:
+            self.total_price = self.tariff.all().aggregate(total=Sum("price")).get("total", 0)
+            self.save()
+            return self.total_price
+        return None
