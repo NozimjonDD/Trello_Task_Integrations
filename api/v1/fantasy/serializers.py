@@ -342,7 +342,7 @@ class SquadSubstituteSerializer(serializers.ModelSerializer):
             queryset=models.SquadPlayer.objects.filter(
                 is_deleted=False,
                 squad__team__user_id=self.context["request"].user.id,
-                is_substitution=False,
+                # is_substitution=False,
             ),
             write_only=True,
         )
@@ -350,7 +350,7 @@ class SquadSubstituteSerializer(serializers.ModelSerializer):
             queryset=models.SquadPlayer.objects.filter(
                 is_deleted=False,
                 squad__team__user_id=self.context["request"].user.id,
-                is_substitution=True,
+                # is_substitution=True,
             ),
             write_only=True,
         )
@@ -366,23 +366,43 @@ class SquadSubstituteSerializer(serializers.ModelSerializer):
         taken_off_player = attrs["taken_off_player"]
         subbed_on_player = attrs["subbed_on_player"]
 
+        is_substitution = False
+        in_player = None
+        out_player = None
+        if not taken_off_player.is_substitution and subbed_on_player.is_substitution or \
+                taken_off_player.is_substitution and not subbed_on_player.is_substitution:
+            is_substitution = True
+
+            if not taken_off_player.is_substitution:
+                in_player = subbed_on_player
+                out_player = taken_off_player
+            else:
+                in_player = taken_off_player
+                out_player = subbed_on_player
+
         if taken_off_player.squad_id != subbed_on_player.squad_id:
             raise serializers.ValidationError(
                 code="same_squad_required",
                 detail={"squad": [_("You can only swap squad players in same squad.")]}
             )
 
-        if taken_off_player.position.position != taken_off_player.position.position:
-            raise serializers.ValidationError(
-                code="same_position_required",
-                detail={"position": [_("You can only swap squad players in same position for now.")]}
-            )
+        # if taken_off_player.position.position != taken_off_player.position.position:
+        #     raise serializers.ValidationError(
+        #         code="same_position_required",
+        #         detail={"position": [_("You can only swap squad players in same position for now.")]}
+        #     )
 
-        if taken_off_player.is_captain:
-            raise serializers.ValidationError(
-                code="choose_other_captain_first",
-                detail={"taken_off_player": [_("First you should choose other captain.")]}
-            )
+        if is_substitution:
+            if out_player.is_captain:
+                raise serializers.ValidationError(
+                    code="choose_other_captain_first",
+                    detail={"taken_off_player": [_("First you should choose other captain before substitution.")]}
+                )
+
+            attrs["taken_off_player"] = out_player
+            attrs["subbed_on_player"] = in_player
+
+        attrs["is_substitution"] = is_substitution
         return attrs
 
     @transaction.atomic
