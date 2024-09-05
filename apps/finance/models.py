@@ -85,6 +85,14 @@ class UserTariff(BaseModel):
         null=True,
         blank=True,
     )
+    round = models.ForeignKey(
+        to="football.Round",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name=_("Round"),
+        null=True,
+        blank=True,
+    )
     amount = models.IntegerField(default=0, verbose_name=_("Amount"))
 
     price = models.DecimalField(
