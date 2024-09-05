@@ -51,6 +51,7 @@ class User(AbstractUser, BaseModel):
     )
 
     balance = models.DecimalField(verbose_name=_("Balance"), max_digits=18, decimal_places=2, default=100000000)
+    coin_balance = models.DecimalField(verbose_name=_("Coin balance"), max_digits=18, decimal_places=2, default="0.00")
 
     EMAIL_FIELD = None
     USERNAME_FIELD = "phone_number"

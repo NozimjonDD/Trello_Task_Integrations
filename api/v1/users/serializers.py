@@ -80,8 +80,9 @@ class UserTariffCaseListSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "tariff",
-            "ordering",
             "amount",
+            "price",
+            "discount_price",
         )
 
 

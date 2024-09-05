@@ -12,8 +12,8 @@ class TariffListSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "type",
-            "price",
-            "discount_price",
+            # "price",
+            # "discount_price",
         )
 
     def to_representation(self, instance):
@@ -35,5 +35,3 @@ class SubscriptionCreateSerilalizer(serializers.ModelSerializer):
         extra_kwargs = {
             "tariff": {"read_only": True},
         }
-
-

@@ -38,6 +38,6 @@ class TransferTypeChoices(models.TextChoices):
 
 
 class TariffTypeChoices(models.TextChoices):
-    FREE = 'free', _("Free")
-    STANDARD = 'standard', _("Standard")
-    ADVANCED = "advanced", _("Advanced")
+    TRIPLE_CAPTAIN = 'triple_captain', _("Triple captain")
+    TRANSFER = 'transfer', _("Transfer")
+    JOIN_LEAGUE = "join_league", _("League join")
