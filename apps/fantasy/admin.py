@@ -29,6 +29,30 @@ class FormationPositionAdmin(admin.ModelAdmin):
     search_fields = ("formation__title", "position__name", "position__short_name",)
 
 
+@admin.register(models.Level)
+class LevelAdmin(admin.ModelAdmin):
+    list_display = ("title", "description", "icon", "level_point", "id",)
+    list_display_links = ("title",)
+    search_fields = ("title", "description", "icon", "level_point", "id",)
+    list_editable = ("level_point",)
+    ordering = ("level_point",)
+    exclude = ("is_deleted", "deleted_at",)
+
+
+@admin.register(models.TeamLevel)
+class TeamLevelAdmin(admin.ModelAdmin):
+    list_display = ("team", "level", "created_at", "id",)
+    list_display_links = ("team", "id",)
+    search_fields = ("team__name", "level__title", "level__description", "id",)
+    list_filter = ("level", "created_at",)
+    autocomplete_fields = ("team", "level",)
+    exclude = ("is_deleted", "deleted_at",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related("team", "level", )
+        return qs
+
+
 @admin.register(models.Team)
 class TeamAdmin(admin.ModelAdmin):
     list_display = ("name", "user", "status", "created_at", "id",)

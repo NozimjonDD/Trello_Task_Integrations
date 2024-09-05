@@ -95,6 +95,8 @@ JAZZMIN_SETTINGS = {
         "fantasy.FantasyLeague",
         "fantasy.LeagueParticipant",
         "fantasy.Formation",
+        "fantasy.Level",
+        "fantasy.TeamLevel",
 
         "football",
         "football.League",
@@ -133,6 +135,8 @@ JAZZMIN_SETTINGS = {
         "fantasy.FantasyLeague": "fas fa-trophy",
         "fantasy.LeagueParticipant": "fas fa-users",
         "fantasy.Formation": "fas fa-grip-horizontal",
+        "fantasy.Level": "fas fa-star",
+        "fantasy.TeamLevel": "fas fa-star",
         "fantasy.PlayerRoundPoint": "fas fa-star",
         "fantasy.TeamRoundPoint": "fas fa-star",
 

@@ -1,6 +1,7 @@
 from django.db import models
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
+from django.utils.functional import cached_property
 
 from apps.common.data import (
     LeagueStatusType, TeamStatusChoices, TransferTypeChoices, LeagueStatusChoices,
@@ -103,6 +104,18 @@ class Team(BaseModel):
     def default_squad(self):
         squad = self.squads.filter(is_default=True).last()
         return squad
+
+    @cached_property
+    def total_points(self):
+        return self.round_points.aggregate(total=models.Sum("total_point"))["total"] or 0
+
+    @cached_property
+    def current_level(self):
+        """
+        Get current level by total_points at the moment.
+        :return: Level
+        """
+        return Level.objects.order_by("level_point").filter(level_point__lte=self.total_points).last()
 
 
 class TeamPlayer(BaseModel):
@@ -316,6 +329,48 @@ class Transfer(BaseModel):
                 pass
 
         self.team.user.save(update_fields=["balance"])
+
+
+class Level(BaseModel):
+    """
+    Teams can have levels according to their team's current point.
+
+    team point > 0 -> junior
+    team point > 1000 -> middle
+    team point > 10000 -> senior.
+
+    pov: This is example.
+    """
+
+    class Meta:
+        db_table = "level"
+        verbose_name = _("level")
+        verbose_name_plural = _("levels")
+
+    title = models.CharField(verbose_name=_("title"), max_length=255)
+    icon = models.ImageField(verbose_name=_("icon"), upload_to="team/level/icons/", null=True, blank=True)
+    level_point = models.PositiveIntegerField(verbose_name=_("level point"))
+    description = models.TextField(verbose_name=_("description"), null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+
+class TeamLevel(BaseModel):
+    class Meta:
+        db_table = "team_level"
+        verbose_name = _("Team level")
+        verbose_name_plural = _("Team levels")
+
+    team = models.ForeignKey(
+        to="fantasy.Team", on_delete=models.CASCADE, related_name="team_levels", verbose_name=_("Team")
+    )
+    level = models.ForeignKey(
+        to="Level", on_delete=models.CASCADE, related_name="team_levels", verbose_name=_("level")
+    )
+
+    def __str__(self):
+        return f"{self.team} - {self.level}"
 
 
 class FantasyLeague(BaseModel):

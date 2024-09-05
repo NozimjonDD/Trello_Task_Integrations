@@ -16,14 +16,32 @@ class _AccountSettingsSerializer(serializers.ModelSerializer):
         )
 
 
+class _TeamLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = fantasy_models.Level
+        fields = (
+            "id",
+            "title",
+            "description",
+            "icon",
+            "level_point",
+        )
+
+
 class _TeamSerializer(serializers.ModelSerializer):
+    level = _TeamLevelSerializer(source="current_level")
+
     class Meta:
         model = fantasy_models.Team
         fields = (
             "id",
             "name",
             "status",
+
+            "total_points",
+            "level",
         )
+        ref_name = "UserAccountTeamDetail"
 
 
 class AccountDetailSerializer(serializers.ModelSerializer):
