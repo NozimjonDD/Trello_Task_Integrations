@@ -45,7 +45,7 @@ class Subscription(BaseModel):
         verbose_name_plural = "Subscriptions"
 
     user = models.OneToOneField(to="users.User", on_delete=models.CASCADE, related_name="subscriptions", null=True)
-    tariff = models.ManyToManyField(to="Tariff", related_name="subscription_tariffs", null=True)
+    tariff = models.ManyToManyField(to="Tariff", related_name="subscription_tariffs", blank=True)
     total_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
 
     @property

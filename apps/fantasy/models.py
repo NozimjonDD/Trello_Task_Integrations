@@ -652,3 +652,39 @@ class TeamRoundPoint(BaseModel):
             total_point=models.Sum("total_point")
         )
         return data["total_point"] or 0
+
+
+class LeagueMemberRoundPoint(BaseModel):
+    class Meta:
+        db_table = "league_member_round_point"
+        verbose_name = _("League member round point")
+        verbose_name_plural = _("League member round points")
+        unique_together = ("league_participant", "round",)
+
+    league_participant = models.ForeignKey(
+        to="fantasy.LeagueParticipant",
+        on_delete=models.CASCADE,
+        related_name="round_points",
+        verbose_name=_("League participant"),
+    )
+    league = models.ForeignKey(
+        to="fantasy.FantasyLeague",
+        on_delete=models.CASCADE,
+        related_name="+",
+        verbose_name=_("League"),
+    )
+    round = models.ForeignKey(
+        to="football.Round",
+        on_delete=models.CASCADE,
+        related_name="+",
+        verbose_name=_("Round"),
+    )
+    total_point = models.DecimalField(
+        verbose_name=_("Points"),
+        max_digits=18,
+        decimal_places=2,
+        default=0,
+    )
+
+    def __str__(self):
+        return f"{self.league_participant} - {self.round} - {self.total_point}"
