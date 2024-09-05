@@ -128,3 +128,14 @@ class LeagueJoinAPIView(generics.CreateAPIView):
     model = models.LeagueParticipant
     permission_classes = [api_permissions.TeamCompleteUserPermission]
     serializer_class = serializers.LeagueJoinSerializer
+
+
+class PrivateLeagueDetailAPIView(generics.RetrieveAPIView):
+    queryset = models.FantasyLeague.objects.filter(
+        is_deleted=False,
+        type=data.LeagueStatusType.PRIVATE,
+        status=data.LeagueStatusChoices.ACTIVE,
+    )
+    serializer_class = serializers.PrivateLeagueDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "invite_code"

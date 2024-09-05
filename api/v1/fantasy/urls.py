@@ -16,4 +16,5 @@ urlpatterns = [
     path("league/public/", views.PublicLeagueListAPIView.as_view(), name="public-league-list"),
     path("league/create/", views.LeagueCreateAPIView.as_view(), name="league-create"),
     path("league/join/", views.LeagueJoinAPIView.as_view(), name="league-join"),
+    path("league/<str:invite_code>/", views.PrivateLeagueDetailAPIView.as_view(), name="private-league-detail"),
 ]

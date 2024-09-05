@@ -591,6 +591,8 @@ class LeagueCreateSerializer(serializers.ModelSerializer):
             "status": {"read_only": True},
             "invite_code": {"read_only": True},
             "title": {"required": True},
+            "starting_round": {"required": True},
+            "ending_round": {"required": True},
         }
 
     @transaction.atomic
@@ -680,3 +682,20 @@ class LeagueJoinSerializer(serializers.ModelSerializer):
         validated_data.pop("league_type")
         validated_data["team"] = self.context["request"].user.p_team
         return super().create(validated_data)
+
+
+class PrivateLeagueDetailSerializer(serializers.ModelSerializer):
+    starting_round = common_serializers.CommonRoundSerializer()
+    ending_round = common_serializers.CommonRoundSerializer()
+
+    class Meta:
+        model = models.FantasyLeague
+        fields = (
+            "id",
+            "title",
+            "description",
+            "status",
+            "starting_round",
+            "ending_round",
+            "created_at",
+        )
