@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
@@ -180,6 +181,9 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
 
 class TeamDetailSerializer(serializers.ModelSerializer):
     default_squad = serializers.SerializerMethodField()
+    balance = serializers.DecimalField(source="user.balance", max_digits=18, decimal_places=2)
+
+    transfer_deadline = serializers.DateTimeField(default=timezone.now())
 
     # team_players = _TeamPlayerSerializer(many=True)
 
@@ -192,6 +196,9 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 
             "default_squad",
             # "team_players",
+            "total_points",
+            "balance",
+            "transfer_deadline",
 
             "created_at",
             "updated_at",

@@ -330,6 +330,13 @@ class Transfer(BaseModel):
 
         self.team.user.save(update_fields=["balance"])
 
+        # just update the team's status to active if team players are full.
+        if self.team.team_players.filter(
+                is_deleted=False
+        ).count() >= 15 and self.team.status == TeamStatusChoices.DRAFT:
+            self.team.status = TeamStatusChoices.ACTIVE
+            self.team.save(update_fields=["status"])
+
 
 class Level(BaseModel):
     """

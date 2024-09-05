@@ -121,3 +121,15 @@ class CommonRoundSerializer(serializers.ModelSerializer):
             "starting_at",
             "ending_at",
         )
+
+
+class CommonLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = fantasy_models.Level
+        fields = (
+            "id",
+            "title",
+            "icon",
+            "level_point",
+            "description",
+        )

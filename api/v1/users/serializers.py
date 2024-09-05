@@ -16,20 +16,8 @@ class _AccountSettingsSerializer(serializers.ModelSerializer):
         )
 
 
-class _TeamLevelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = fantasy_models.Level
-        fields = (
-            "id",
-            "title",
-            "description",
-            "icon",
-            "level_point",
-        )
-
-
 class _TeamSerializer(serializers.ModelSerializer):
-    level = _TeamLevelSerializer(source="current_level")
+    level = common_serializers.CommonLevelSerializer(source="current_level")
 
     class Meta:
         model = fantasy_models.Team
@@ -60,6 +48,7 @@ class AccountDetailSerializer(serializers.ModelSerializer):
             "profile_picture",
             "date_of_birth",
             "balance",
+            "coin_balance",
             "pretty_balance",
 
             "team",
