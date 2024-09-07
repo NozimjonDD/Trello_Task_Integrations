@@ -386,7 +386,7 @@ class SquadSubstituteSerializer(serializers.ModelSerializer):
                 detail={"squad": [_("You can only swap squad players in same squad.")]}
             )
 
-        if taken_off_player.position.position != taken_off_player.position.position:
+        if taken_off_player.position.position != subbed_on_player.position.position:
             raise serializers.ValidationError(
                 code="same_position_required",
                 detail={"position": [_("You can only swap squad players in same position.")]}
