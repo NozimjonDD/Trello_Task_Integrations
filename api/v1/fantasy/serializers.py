@@ -682,6 +682,14 @@ class LeagueJoinSerializer(serializers.ModelSerializer):
 
         team = self.context["request"].user.p_team
 
+        if self.context["request"].user.team.league_join_limit <= 0:
+            raise serializers.ValidationError(
+                code="league_join_limit_reached",
+                detail={"team": [
+                    _("You have reached free limit of joining leagues. To join more leagues please buy tariff.")
+                ]}
+            )
+
         if league_type == LeagueStatusType.PUBLIC:
             if not league:
                 raise serializers.ValidationError(
@@ -728,6 +736,13 @@ class LeagueJoinSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("league_type")
         validated_data["team"] = self.context["request"].user.p_team
+        team = self.context["request"].user.p_team
+
+        league_join_tariff = team.current_league_join_user_tariff
+        if team.free_league_join_limit <= 0 and league_join_tariff:
+            league_join_tariff.amount -= 1
+            league_join_tariff.save(update_fields=["amount"])
+
         return super().create(validated_data)
 
 

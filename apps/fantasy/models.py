@@ -183,6 +183,18 @@ class Team(BaseModel):
             season_id=football_models.Round.get_coming_gw().season_id,
         ).order_by("created_at").first()
 
+    @cached_property
+    def current_triple_captain_user_tariff(self):
+        return finance_models.UserTariff.objects.filter(
+            user_id=self.user.pk,
+            tariff__type=TariffTypeChoices.TRIPLE_CAPTAIN,
+            is_deleted=False,
+            amount__gt=0,
+            season_id=football_models.Round.get_current_gw().season_id,
+        ).filter(
+            models.Q(round__isnull=True) | models.Q(round=football_models.Round.get_current_gw())
+        ).order_by("created_at").first()
+
 
 class TeamPlayer(BaseModel):
     class Meta:

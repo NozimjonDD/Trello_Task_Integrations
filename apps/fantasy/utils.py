@@ -223,10 +223,20 @@ def update_squad_player_points(player_point):
         squad__round_id=player_point.round_id,
     )
     for player in squad_players:
+
+        triple_captain_user_tariff = player.squad.team.current_triple_captain_user_tariff
+        times = 2
+
+        if triple_captain_user_tariff:
+            times = 3
+
+            if not triple_captain_user_tariff.round:
+                triple_captain_user_tariff.round = player_point.round
+                triple_captain_user_tariff.save(update_fields=["round"])
+
         total_point = player_point.total_point
         if player.is_captain:
-            total_point *= 2
-        # TODO: check TARIFF and update total_point
+            total_point *= times
 
         if hasattr(player, "round_point"):
             player.round_point.total_point = total_point
