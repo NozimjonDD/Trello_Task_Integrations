@@ -591,14 +591,14 @@ class LeagueCreateSerializer(serializers.ModelSerializer):
         queryset=football_models.Round.objects.filter(
             is_deleted=False,
             is_finished=False,
-            season__league_id=settings.PREMIER_LEAGUE_ID,
+            season__league__remote_id=settings.PREMIER_LEAGUE_ID,
         )
     )
     ending_round = serializers.PrimaryKeyRelatedField(
         queryset=football_models.Round.objects.filter(
             is_deleted=False,
             is_finished=False,
-            season__league_id=settings.PREMIER_LEAGUE_ID,
+            season__league__remote_id=settings.PREMIER_LEAGUE_ID,
         )
     )
 
