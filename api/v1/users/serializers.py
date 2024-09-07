@@ -83,8 +83,6 @@ class UserTariffListSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "type",
-            "price",
-            "discount_price",
         )
 
     def to_representation(self, instance):
@@ -101,8 +99,6 @@ class TariffDetailSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "type",
-            "price",
-            "discount_price",
         )
 
 

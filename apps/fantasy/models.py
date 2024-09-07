@@ -5,9 +5,12 @@ from django.utils.functional import cached_property
 
 from apps.common.data import (
     LeagueStatusType, TeamStatusChoices, TransferTypeChoices, LeagueStatusChoices,
-    LeagueParticipantStatusChoices
+    LeagueParticipantStatusChoices,
+    TariffTypeChoices
 )
 from apps.common.models import BaseModel
+from apps.football import models as football_models
+from apps.finance import models as finance_models
 from apps.common import utils as common_utils
 from . import utils
 
@@ -116,6 +119,69 @@ class Team(BaseModel):
         :return: Level
         """
         return Level.objects.order_by("level_point").filter(level_point__lte=self.total_points).last()
+
+    @cached_property
+    def round_free_transfer_limit(self):
+        transfer_count = self.transfers.filter(
+            transfer_type__in=[TransferTypeChoices.BUY, TransferTypeChoices.SWAP],
+            round=football_models.Round.get_coming_gw(),
+        ).count()
+        if transfer_count >= 3:
+            return 0
+        return 3 - transfer_count
+
+    @cached_property
+    def round_transfer_limit(self):
+        free_transfer_limit = self.round_free_transfer_limit
+        tariff_limit = finance_models.UserTariff.objects.filter(
+            user_id=self.user.pk,
+            tariff__type=TariffTypeChoices.TRANSFER,
+            is_deleted=False,
+            season_id=football_models.Round.get_coming_gw().season_id,
+        ).aggregate(amount=models.Sum("amount"))["amount"] or 0
+        return free_transfer_limit + tariff_limit
+
+    @cached_property
+    def free_league_join_limit(self):
+        league_count = self.league_participants.filter(
+            is_deleted=False,
+        ).exclude(
+            league__status=LeagueStatusChoices.FINISHED,
+        ).count()
+        if league_count >= 3:
+            return 0
+        return 3 - league_count
+
+    @cached_property
+    def league_join_limit(self):
+        free_league_join_limit = self.free_league_join_limit
+        tariff_limit = finance_models.UserTariff.objects.filter(
+            user_id=self.user.pk,
+            tariff__type=TariffTypeChoices.JOIN_LEAGUE,
+            is_deleted=False,
+            season_id=football_models.Round.get_coming_gw().season_id,
+        ).aggregate(amount=models.Sum("amount"))["amount"] or 0
+        return free_league_join_limit + tariff_limit
+
+    @cached_property
+    def current_transfer_user_tariff(self):
+        return finance_models.UserTariff.objects.filter(
+            user_id=self.user.pk,
+            tariff__type=TariffTypeChoices.TRANSFER,
+            is_deleted=False,
+            amount__gt=0,
+            season_id=football_models.Round.get_coming_gw().season_id,
+        ).order_by("created_at").first()
+
+    @cached_property
+    def current_league_join_user_tariff(self):
+        return finance_models.UserTariff.objects.filter(
+            user_id=self.user.pk,
+            tariff__type=TariffTypeChoices.JOIN_LEAGUE,
+            is_deleted=False,
+            amount__gt=0,
+            season_id=football_models.Round.get_coming_gw().season_id,
+        ).order_by("created_at").first()
 
 
 class TeamPlayer(BaseModel):
@@ -283,6 +349,14 @@ class Transfer(BaseModel):
         on_delete=models.SET_NULL,
         related_name="+",
         verbose_name=_("Squad player"),
+        null=True,
+        blank=True,
+    )
+    round = models.ForeignKey(
+        to="football.Round",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name=_("Round"),
         null=True,
         blank=True,
     )

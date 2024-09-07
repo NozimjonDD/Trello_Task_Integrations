@@ -476,6 +476,13 @@ class TransferSerializer(serializers.ModelSerializer):
             )
 
         if transfer_type == TransferTypeChoices.BUY:
+            if team.round_free_transfer_limit <= 0 and team.round_transfer_limit <= 0:
+                raise serializers.ValidationError(
+                    code="free_transfer_limit_reached",
+                    detail={"team": [
+                        _("You have used all free transfers. To transfer more players, you need to buy tariff.")
+                    ]}
+                )
             if team.team_players.filter(is_deleted=False).count() >= 15:
                 raise serializers.ValidationError(
                     code="full_team",
@@ -524,6 +531,13 @@ class TransferSerializer(serializers.ModelSerializer):
                     code="required",
                     detail={"swapped_player": [_("This field is required.")]}
                 )
+            if team.round_free_transfer_limit <= 0 and team.round_transfer_limit <= 0:
+                raise serializers.ValidationError(
+                    code="free_transfer_limit_reached",
+                    detail={"team": [
+                        _("You have used all free transfers. To transfer more players, you need to buy tariff.")
+                    ]}
+                )
             if not team.team_players.filter(player_id=swapped_player.id).exists():
                 raise serializers.ValidationError(
                     code="team_player_doesnt_exists",
@@ -556,12 +570,18 @@ class TransferSerializer(serializers.ModelSerializer):
         transfer_type = validated_data["transfer_type"]
 
         validated_data["team"] = team
+        validated_data["round"] = football_models.Round.get_coming_gw()
         validated_data["fee"] = 0
         if transfer_type in [TransferTypeChoices.BUY, TransferTypeChoices.SELL]:
             validated_data["fee"] = validated_data["player"].market_value
         elif transfer_type == TransferTypeChoices.SWAP:
             validated_data["fee"] = validated_data["player"].market_value - validated_data[
                 "swapped_player"].market_value
+
+        if team.round_free_transfer_limit <= 0:
+            user_tariff = team.current_transfer_user_tariff
+            user_tariff.amount -= 1
+            user_tariff.save(update_fields=["amount"])
 
         instance = super().create(validated_data)
 

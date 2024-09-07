@@ -28,3 +28,13 @@ class TariffOptionAdmin(admin.ModelAdmin):
     list_filter = ("tariff", "created_at",)
     autocomplete_fields = ("tariff",)
     ordering = ("ordering",)
+
+
+@admin.register(models.UserTariff)
+class UserTariffAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.TariffOrder)
+class TariffOrderAdmin(admin.ModelAdmin):
+    pass

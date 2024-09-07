@@ -2,8 +2,9 @@ from django.db import models
 from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 
-from apps.common.data import TariffTypeChoices
+from apps.common.data import TariffTypeChoices, TariffOrderStatusChoices
 from apps.common.models import BaseModel
+from apps.football import models as football_models
 
 
 class Tariff(BaseModel):
@@ -121,6 +122,12 @@ class TariffOrder(BaseModel):
         verbose_name=_("Tariff option"),
         null=True,
     )
+    status = models.CharField(
+        max_length=100,
+        choices=TariffOrderStatusChoices.choices,
+        default=TariffOrderStatusChoices.PENDING,
+        verbose_name=_("Status"),
+    )
     price = models.DecimalField(
         max_digits=18,
         decimal_places=2,
@@ -133,6 +140,27 @@ class TariffOrder(BaseModel):
         blank=True,
         help_text=_("Prices are in coins."),
     )
+
+    def __str__(self):
+        return f"{self.user} - {self.tariff}"
+
+    def apply_tariff_order(self):
+        if self.discount_price:
+            self.user.coin_balance -= self.discount_price
+        else:
+            self.user.coin_balance -= self.price
+        self.user.save(update_fields=["coin_balance"])
+
+        UserTariff.objects.create(
+            user_id=self.user_id,
+            tariff_id=self.tariff_id,
+            tariff_option_id=self.tariff_option_id,
+            amount=self.tariff_option.amount,
+            season_id=football_models.Round.get_coming_gw().season_id,
+        )
+
+        self.status = TariffOrderStatusChoices.SUCCESS
+        self.save(update_fields=["status"])
 
 
 class Subscription(BaseModel):
