@@ -127,6 +127,8 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
     round_point = _SquadRoundPointSerializer()
     transfer_count = serializers.SerializerMethodField()
 
+    transfer_deadline = serializers.DateTimeField(source="round.transfer_deadline")
+
     class Meta:
         model = models.Squad
         fields = (
@@ -138,6 +140,7 @@ class _DefaultSquadSerializer(serializers.ModelSerializer):
 
             "round_point",
             "transfer_count",
+            "transfer_deadline",
         )
 
     def get_squad_players(self, obj):
@@ -183,8 +186,6 @@ class TeamDetailSerializer(serializers.ModelSerializer):
     default_squad = serializers.SerializerMethodField()
     balance = serializers.DecimalField(source="user.balance", max_digits=18, decimal_places=2)
 
-    transfer_deadline = serializers.DateTimeField(default=timezone.now())
-
     # team_players = _TeamPlayerSerializer(many=True)
 
     class Meta:
@@ -198,7 +199,6 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             # "team_players",
             "total_points",
             "balance",
-            "transfer_deadline",
 
             "created_at",
             "updated_at",
@@ -428,7 +428,7 @@ class TransferSerializer(serializers.ModelSerializer):
     )
     squad_player = serializers.PrimaryKeyRelatedField(
         queryset=models.SquadPlayer.objects.filter(
-            is_deleted=False, squad__is_default=True
+            is_deleted=False, squad__is_default=True,
         ),
         required=False,
         allow_null=True,
@@ -469,10 +469,24 @@ class TransferSerializer(serializers.ModelSerializer):
         swapped_player = attrs.get("swapped_player", None)
         squad_player = attrs.get("squad_player", None)
 
+        rnd = football_models.Round.get_coming_gw()
+
         if not team:
             raise serializers.ValidationError(
                 code="not_created",
                 detail={"team": [_("You have not created a team!")]}
+            )
+
+        if squad_player.squad.round != rnd:
+            raise serializers.ValidationError(
+                code="not_allowed",
+                detail={"squad_player": [_("You can only transfer players from coming round squad.")]}
+            )
+
+        if rnd.transfer_deadline < timezone.now():
+            raise serializers.ValidationError(
+                code="deadline_passed",
+                detail={"round": [_("Transfer deadline for coming round has passed.")]}
             )
 
         if transfer_type == TransferTypeChoices.BUY:

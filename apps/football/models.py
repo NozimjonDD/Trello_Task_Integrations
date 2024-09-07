@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 from apps.common import utils as common_utils
 from apps.common.models import BaseModel
@@ -104,6 +105,11 @@ class Round(FootballBaseModel):
     def get_coming_gw(cls):
         gw = cls.objects.filter(starting_at__gte=timezone.now().today()).order_by("starting_at").first()
         return gw
+
+    @cached_property
+    def transfer_deadline(self):
+        first_fixture = self.fixtures.order_by("match_date").first()
+        return first_fixture.match_date - timezone.timedelta(hours=1)
 
 
 class FixtureState(FootballBaseModel):
