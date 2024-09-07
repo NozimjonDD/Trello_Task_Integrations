@@ -1,34 +1,21 @@
 from rest_framework import permissions
 from rest_framework.generics import ListAPIView, GenericAPIView
-from rest_framework.response import Response
 
-from api.v1.finance.serializers import *
+from api.v1.finance import serializers
 from apps.finance.models import *
 
 
 class TariffListAPIView(ListAPIView):
     queryset = Tariff.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = TariffListSerializer
+    serializer_class = serializers.TariffListSerializer
 
 
-class SubscriptionAPIView(GenericAPIView):
+class TariffOptionListAPIView(ListAPIView):
+    queryset = TariffOption.objects.filter(is_deleted=False).order_by("ordering")
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = SubscriptionCreateSerilalizer
-
-    def post(self, request, *args, **kwargs):
-        print(55555555555)
-        user = self.request.user
-        tariff = int(self.request.data['tariff_id'])
-
-        sub, _ = Subscription.objects.update_or_create(
-            user_id=user.id,
-            defaults={
-                "user_id": user.id,
-            }
-
-        )
-        sub.tariff.add(tariff)
-        # calc = sub.calculate_total_price
-
-        return Response({"user_id": user.id, "plans": sub.tariff.all().values(), "subscription_id": sub.id})
+    serializer_class = serializers.TariffOptionListSerializer
+    filterset_fields = {
+        "tariff__type": ["exact"],
+    }
+    pagination_class = None

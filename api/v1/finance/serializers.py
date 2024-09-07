@@ -1,12 +1,12 @@
 from rest_framework import serializers
 
 from api.v1.users.serializers import UserTariffCaseListSerializer
-from apps.finance.models import Tariff, Subscription
+from apps.finance import models
 
 
 class TariffListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tariff
+        model = models.Tariff
         fields = (
             "id",
             "title",
@@ -22,16 +22,13 @@ class TariffListSerializer(serializers.ModelSerializer):
         return data
 
 
-class SubscriptionCreateSerilalizer(serializers.ModelSerializer):
+class TariffOptionListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Subscription
+        model = models.TariffOption
         fields = (
             "id",
-            "user",
-            "tariff",
-            "total_price",
+            "title",
+            "amount",
+            "price",
+            "discount_price",
         )
-
-        extra_kwargs = {
-            "tariff": {"read_only": True},
-        }

@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from api.v1 import common_serializers
 from apps.fantasy import models as fantasy_models
-from apps.finance.models import Tariff, TariffCase, Subscription
+from apps.finance.models import Tariff, TariffOption, Subscription
 from apps.football import models as football_models
 from apps.users import models
 
@@ -64,7 +64,7 @@ class AccountDetailSerializer(serializers.ModelSerializer):
 
 class UserTariffCaseListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TariffCase
+        model = TariffOption
         fields = (
             "id",
             "title",

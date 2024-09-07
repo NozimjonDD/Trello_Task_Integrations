@@ -113,6 +113,12 @@ JAZZMIN_SETTINGS = {
         "football.Player",
         "football.ClubPlayer",
         "football.SportmonksType",
+
+        "finance",
+        "finance.Tariff",
+        "finance.TariffOption",
+        "finance.UserTariff",
+        "finance.TariffOrder",
     ],
 
     # Custom icons for side menu apps/models See https://fontawesome.com/icons?d=gallery&m=free&v=5.0.0,5.0.1,5.0.10,5.0.11,5.0.12,5.0.13,5.0.2,5.0.3,5.0.4,5.0.5,5.0.6,5.0.7,5.0.8,5.0.9,5.1.0,5.1.1,5.2.0,5.3.0,5.3.1,5.4.0,5.4.1,5.4.2,5.13.0,5.12.0,5.11.2,5.11.1,5.10.0,5.9.0,5.8.2,5.8.1,5.7.2,5.7.1,5.7.0,5.6.3,5.5.0,5.4.2
@@ -154,6 +160,12 @@ JAZZMIN_SETTINGS = {
         "football.Player": "fas fa-user",
         "football.ClubPlayer": "fas fa-user",
         "football.SportmonksType": "fas fa-user-tag",
+
+        "finance": "fas fa-money-bill-wave",
+        "finance.Tariff": "fas fa-tags",
+        "finance.TariffOption": "fas fa-list",
+        "finance.UserTariff": "fas fa-user-tag",
+        "finance.TariffOrder": "fas fa-receipt",
 
         "auditlog": "fas fa-clipboard-list",
         "auditlog.LogEntry": "fas fa-clipboard-list",

@@ -14,23 +14,19 @@ class Tariff(BaseModel):
 
     title = models.CharField(max_length=200, verbose_name=_("Title"), null=True)
     description = models.TextField(verbose_name=_("description"))
-    type = models.CharField(choices=TariffTypeChoices.choices, max_length=100)
-
-    # TODO: move prices from tariff to tariff cases
-    price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
-    discount_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    type = models.CharField(choices=TariffTypeChoices.choices, max_length=100, unique=True, verbose_name=_("Type"))
 
     def __str__(self):
-        return self.title
+        return f"{self.title}"
 
 
-class TariffCase(BaseModel):
+class TariffOption(BaseModel):
     class Meta:
-        db_table = "tariff_case"
-        verbose_name = "Tariff Case"
-        verbose_name_plural = "Tariff Cases"
+        db_table = "tariff_option"
+        verbose_name = "Tariff option"
+        verbose_name_plural = "Tariff options"
 
-    tariff = models.ForeignKey(to="Tariff", on_delete=models.CASCADE, related_name="tariff_cases", null=True)
+    tariff = models.ForeignKey(to="Tariff", on_delete=models.CASCADE, related_name="tariff_options", null=True)
     title = models.CharField(max_length=200, verbose_name=_("Title"), null=True)
     amount = models.IntegerField(default=0, verbose_name=_("Amount"))
 
@@ -50,7 +46,7 @@ class TariffCase(BaseModel):
     ordering = models.IntegerField(default=1, verbose_name=_("Ordering"))
 
     def __str__(self):
-        return self.title
+        return f"{self.title}"
 
 
 class UserTariff(BaseModel):
@@ -71,11 +67,12 @@ class UserTariff(BaseModel):
         related_name="user_tariffs",
         verbose_name=_("Tariff"),
     )
-    tariff_case = models.ForeignKey(
-        to="TariffCase",
-        on_delete=models.CASCADE,
+    tariff_option = models.ForeignKey(
+        to="TariffOption",
+        on_delete=models.SET_NULL,
         related_name="user_tariffs",
-        verbose_name=_("Tariff Case"),
+        verbose_name=_("Tariff option"),
+        null=True,
     )
     season = models.ForeignKey(
         to="football.Season",
@@ -95,23 +92,47 @@ class UserTariff(BaseModel):
     )
     amount = models.IntegerField(default=0, verbose_name=_("Amount"))
 
+    def __str__(self):
+        return f"{self.user} - {self.tariff}"
+
+
+class TariffOrder(BaseModel):
+    class Meta:
+        db_table = "tariff_order"
+        verbose_name = _("Tariff Order")
+        verbose_name_plural = _("Tariff Orders")
+
+    user = models.ForeignKey(
+        to="users.User",
+        on_delete=models.CASCADE,
+        related_name="tariff_orders",
+        verbose_name=_("User"),
+    )
+    tariff = models.ForeignKey(
+        to="Tariff",
+        on_delete=models.CASCADE,
+        related_name="tariff_orders",
+        verbose_name=_("Tariff"),
+    )
+    tariff_option = models.ForeignKey(
+        to="TariffOption",
+        on_delete=models.SET_NULL,
+        related_name="tariff_orders",
+        verbose_name=_("Tariff option"),
+        null=True,
+    )
     price = models.DecimalField(
         max_digits=18,
         decimal_places=2,
-        null=True,
-        blank=True,
-        help_text=_("Tariff cases price when user bought it."),
+        help_text=_("Prices are in coins."),
     )
     discount_price = models.DecimalField(
         max_digits=18,
         decimal_places=2,
         null=True,
         blank=True,
-        help_text=_("Tariff cases discount price when user bought it."),
+        help_text=_("Prices are in coins."),
     )
-
-    def __str__(self):
-        return f"{self.user} - {self.tariff}"
 
 
 class Subscription(BaseModel):

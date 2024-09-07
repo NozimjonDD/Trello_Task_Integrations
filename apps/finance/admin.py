@@ -1,21 +1,30 @@
 from django.contrib import admin
 
-# Register your models here.
 from apps.finance import models
 
 
-@admin.register(models.TariffCase)
-class TariffCaseAdmin(admin.ModelAdmin):
-    list_display = ("title", "tariff", "amount", "ordering",)
+class TariffOptionInline(admin.StackedInline):
+    model = models.TariffOption
+    extra = 1
+    exclude = ("is_deleted", "deleted_at",)
+    autocomplete_fields = ("tariff",)
 
 
 @admin.register(models.Tariff)
 class TariffAdmin(admin.ModelAdmin):
-    list_display = ("title", "description", "type", "price", "discount_price",)
+    list_display = ("title", "type", "created_at", "id",)
+    list_display_links = ("title", "id",)
+    search_fields = ("title", "type", "id",)
+    exclude = ("is_deleted", "deleted_at",)
+    inlines = (TariffOptionInline,)
 
 
-@admin.register(models.Subscription)
-class TariffAdmin(admin.ModelAdmin):
+@admin.register(models.TariffOption)
+class TariffOptionAdmin(admin.ModelAdmin):
+    list_display = ("title", "tariff", "amount", "price", "discount_price", "ordering", "created_at", "id",)
+    list_display_links = ("title", "id",)
+    list_editable = ("ordering",)
+    search_fields = ("title", "tariff__title", "amount", "price", "discount_price", "id",)
     list_filter = ("tariff", "created_at",)
-    search_fields = ("user__phone_number",)
-    list_display = ("user", "total_price",)
+    autocomplete_fields = ("tariff",)
+    ordering = ("ordering",)
