@@ -50,6 +50,9 @@ THIRD_PARTY_APPS = [
     # "mptt",
     "auditlog",
     "rest_framework_simplejwt",
+
+    "ckeditor",
+    "ckeditor_uploader",
 ]
 INSTALLED_APPS = DJANGO_APPS + MY_APPS + THIRD_PARTY_APPS
 
@@ -141,11 +144,12 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
+    "EXCEPTION_HANDLER": "EPL_backend.utils.custom_exception_handler"  # noqa
 }
 
 LANGUAGE_CODE = 'uz'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'
 
 USE_I18N = True
 
@@ -215,7 +219,12 @@ SIMPLE_JWT = {
     "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
 }
 
-OTP_EXPIRATION_TIME = 120  # seconds
+OTP_EXPIRATION_TIME = 300  # seconds
 
 # SPORTMONKS
 SPORTMONKS_APIKEY = os.environ.get("SPORTMONKS_APIKEY", default="dummy")
+PREMIER_LEAGUE_ID = 8
+
+# CKEDITOR
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
+CKEDITOR_UPLOAD_PATH = "uploads/"

@@ -1,9 +1,13 @@
+from pprint import pprint
+
 from django.db import transaction
+from rest_framework import serializers
 
 from . import service, models
 
 
-def update_positions():
+def update_types():
+    """ Update sportmonks types & positions. """
     page = 1
     has_more = True
 
@@ -22,16 +26,24 @@ def update_positions():
 
             for type_ in types_data:
 
-                if not type_["model_type"] == "position":
-                    continue
-
-                models.Position.objects.update_or_create(
-                    remote_id=type_["id"],
-                    defaults={
-                        "name": type_["name"],
-                        "code": type_["code"],
-                    }
-                )
+                if type_["model_type"] == "position":
+                    models.Position.objects.update_or_create(
+                        remote_id=type_["id"],
+                        defaults={
+                            "name": type_["name"],
+                            "code": type_["code"],
+                        }
+                    )
+                else:
+                    models.SportMonksType.objects.update_or_create(
+                        remote_id=type_["id"],
+                        defaults={
+                            "name": type_["name"],
+                            "code": type_["code"],
+                            "model_type": type_["model_type"],
+                            "developer_name": type_["developer_name"],
+                        }
+                    )
 
         has_more = resp_data["pagination"]["has_more"]
         page += 1
@@ -199,6 +211,8 @@ def update_fixtures_by_season(season_id):
             for fixture in fixtures_data:
                 home_club = None
                 away_club = None
+                home_score = None
+                away_score = None
 
                 for p in fixture["participants"]:
                     if p["meta"]["location"] == "home":
@@ -206,13 +220,22 @@ def update_fixtures_by_season(season_id):
                     elif p["meta"]["location"] == "away":
                         away_club = models.Club.objects.get(remote_id=p["id"])
 
-                models.Fixture.objects.update_or_create(
+                for score in fixture["scores"]:
+                    if score["description"] == "CURRENT":
+                        if score["participant_id"] == home_club.remote_id:
+                            home_score = score["score"]["goals"]
+                        elif score["participant_id"] == away_club.remote_id:
+                            away_score = score["score"]["goals"]
+
+                fixture_obj, _ = models.Fixture.objects.update_or_create(
                     remote_id=fixture["id"],
                     defaults={
                         "season": models.Season.objects.get(remote_id=fixture["season_id"]),
                         "round": models.Round.objects.get(remote_id=fixture["round_id"]),
                         "home_club": home_club,
                         "away_club": away_club,
+                        "home_club_score": home_score,
+                        "away_club_score": away_score,
                         "title": fixture["name"],
                         "venue_id": fixture["venue_id"],
                         "state": models.FixtureState.objects.get(remote_id=fixture["state_id"]),
@@ -221,8 +244,178 @@ def update_fixtures_by_season(season_id):
                         "length": fixture["length"],
                     }
                 )
+
+                for event in fixture["events"]:
+                    if event["sub_type_id"]:
+                        sub_type = models.SportMonksType.objects.get(remote_id=event["sub_type_id"])
+                    else:
+                        sub_type = None
+
+                    try:
+                        models.FixtureEvent.objects.update_or_create(
+                            remote_id=event["id"],
+                            defaults={
+                                "fixture": fixture_obj,
+                                "type": models.SportMonksType.objects.get(remote_id=event["type_id"]),
+                                "sub_type": sub_type,
+                                "club": models.Club.objects.get(remote_id=event["participant_id"]),
+                                "player": models.Player.objects.get(remote_id=event["player_id"]),
+                                "related_player": models.Player.objects.get(remote_id=event["related_player_id"]),
+                                "minute": event["minute"],
+                                "extra_minute": event["extra_minute"],
+                                "injured": event["injured"],
+                                "on_bench": event["on_bench"],
+                                "result": event["result"],
+                                "info": event["info"],
+                            }
+                        )
+                    except (models.Player.DoesNotExist,):
+                        continue
+
+                for stat in fixture["statistics"]:
+                    models.FixtureStatistic.objects.update_or_create(
+                        remote_id=stat["id"],
+                        defaults={
+                            "fixture": fixture_obj,
+                            "type": models.SportMonksType.objects.get(remote_id=stat["type_id"]),
+                            "club": models.Club.objects.get(remote_id=stat["participant_id"]),
+                            "value": stat["data"]["value"],
+                            "data": stat["data"],
+                            "location": stat["location"],
+                        }
+                    )
+                try:
+                    for lineup in fixture["lineups"]:
+                        models.Lineup.objects.update_or_create(
+                            remote_id=lineup["id"],
+                            defaults={
+                                "fixture": fixture_obj,
+                                "type": models.SportMonksType.objects.get(remote_id=lineup["type_id"]),
+                                "club": models.Club.objects.get(remote_id=lineup["team_id"]),
+                                "player": models.Player.objects.get(remote_id=lineup["player_id"]),
+                            }
+                        )
+                except models.Player.DoesNotExist:
+                    print("=" * 200)
+                    continue
         has_more = resp_data["pagination"]["has_more"]
         page += 1
+
+
+def update_fixture_by_id(fixture_id):
+    success, resp_data = service.SportMonksAPIClient().fetch_fixture_by_id(
+        fixture_id=fixture_id
+    )
+
+    if not success:
+        return
+
+    try:
+        fixture = resp_data["data"]
+    except KeyError:
+        return
+
+    with transaction.atomic():
+
+        home_club = None
+        away_club = None
+        home_score = None
+        away_score = None
+
+        for p in fixture["participants"]:
+            if p["meta"]["location"] == "home":
+                home_club = models.Club.objects.get(remote_id=p["id"])
+            elif p["meta"]["location"] == "away":
+                away_club = models.Club.objects.get(remote_id=p["id"])
+
+        for score in fixture["scores"]:
+            if score["description"] == "CURRENT":
+                if score["participant_id"] == home_club.remote_id:
+                    home_score = score["score"]["goals"]
+                elif score["participant_id"] == away_club.remote_id:
+                    away_score = score["score"]["goals"]
+
+        fixture_obj, _ = models.Fixture.objects.update_or_create(
+            remote_id=fixture["id"],
+            defaults={
+                "season": models.Season.objects.get(remote_id=fixture["season_id"]),
+                "round": models.Round.objects.get(remote_id=fixture["round_id"]),
+                "home_club": home_club,
+                "away_club": away_club,
+                "home_club_score": home_score,
+                "away_club_score": away_score,
+                "title": fixture["name"],
+                "venue_id": fixture["venue_id"],
+                "state": models.FixtureState.objects.get(remote_id=fixture["state_id"]),
+                "result_info": fixture["result_info"],
+                "match_date": fixture["starting_at"],
+                "length": fixture["length"],
+            }
+        )
+
+        for event in fixture["events"]:
+            if event["sub_type_id"]:
+                sub_type = models.SportMonksType.objects.get(remote_id=event["sub_type_id"])
+            else:
+                sub_type = None
+
+            try:
+                models.FixtureEvent.objects.update_or_create(
+                    remote_id=event["id"],
+                    defaults={
+                        "fixture": fixture_obj,
+                        "type": models.SportMonksType.objects.get(remote_id=event["type_id"]),
+                        "sub_type": sub_type,
+                        "club": models.Club.objects.get(remote_id=event["participant_id"]),
+                        "player": models.Player.objects.get(
+                            remote_id=event["player_id"]
+                        ) if event["player_id"] else None,
+                        "related_player": models.Player.objects.get(
+                            remote_id=event["related_player_id"]
+                        ) if event["related_player_id"] else None,
+                        "minute": event["minute"],
+                        "extra_minute": event["extra_minute"],
+                        "injured": event["injured"],
+                        "on_bench": event["on_bench"],
+                        "result": event["result"],
+                        "info": event["info"],
+                    }
+                )
+            except (models.Player.DoesNotExist,):
+                continue
+
+        for stat in fixture["statistics"]:
+            models.FixtureStatistic.objects.update_or_create(
+                remote_id=stat["id"],
+                defaults={
+                    "fixture": fixture_obj,
+                    "type": models.SportMonksType.objects.get(remote_id=stat["type_id"]),
+                    "club": models.Club.objects.get(remote_id=stat["participant_id"]),
+                    "value": stat["data"]["value"],
+                    "data": stat["data"],
+                    "location": stat["location"],
+                }
+            )
+
+        lineup_remote_ids = [i["id"] for i in fixture["lineups"]]
+        models.Lineup.objects.filter(fixture_id=fixture_obj.pk).exclude(remote_id__in=lineup_remote_ids).delete()
+        for lineup in fixture["lineups"]:
+            try:
+                models.Lineup.objects.update_or_create(
+                    remote_id=lineup["id"],
+                    defaults={
+                        "fixture": fixture_obj,
+                        "type": models.SportMonksType.objects.get(remote_id=lineup["type_id"]),
+                        "club": models.Club.objects.get(
+                            remote_id=lineup["team_id"]
+                        ) if lineup["team_id"] else None,
+                        "player": models.Player.objects.get(
+                            remote_id=lineup["player_id"]
+                        ) if lineup["player_id"] else None,
+                    }
+                )
+            except (models.Player.DoesNotExist, models.Club.DoesNotExist, models.SportMonksType.DoesNotExist):
+                continue
 
 
 def update_clubs_by_season(season_id):
@@ -257,7 +450,12 @@ def update_clubs_by_season(season_id):
                 })
 
             for player in players_data:
-                plyer = models.Player.objects.get(remote_id=player["player_id"])
+
+                try:
+                    plyer = models.Player.objects.get(remote_id=player["player_id"])
+                except models.Player.DoesNotExist:
+                    continue
+
                 models.ClubPlayer.objects.update_or_create(
                     remote_id=player["id"],
                     defaults={
@@ -276,8 +474,9 @@ def update_clubs_by_season(season_id):
                 )
 
                 plyer.club = club
+                plyer.jersey_number = player["jersey_number"]
                 plyer.club_contract_until = player["end"]
-                plyer.save(update_fields=["club", "club_contract_until"])
+                plyer.save(update_fields=["club", "club_contract_until", "jersey_number"])
 
 
 def update_club_details(club_id):
@@ -328,7 +527,8 @@ def update_club_details(club_id):
 
             plyer.club = club
             plyer.club_contract_until = player["end"]
-            plyer.save(update_fields=["club", "club_contract_until"])
+            plyer.jersey_number = player["jersey_number"]
+            plyer.save(update_fields=["club", "club_contract_until", "jersey_number"])
 
 
 def update_players():
@@ -367,3 +567,76 @@ def update_players():
 
         has_more = resp_data["pagination"]["has_more"]
         page += 1
+
+
+@transaction.atomic
+def update_premierleague_status_by_players():
+    success, resp_data = service.PremierLeagueAPIClient().fetch_statistics()
+
+    try:
+        players_data = resp_data['elements']
+    except Exception as e:
+        raise serializers.ValidationError(
+            {"API": "Invalid  data", "message": "Problem with API response"}
+        )
+
+    count = 0
+    for player in players_data:
+        count = count + 1
+
+        models.PremierLeagueStatusByPlayer.objects.update_or_create(
+            remote_id=player["id"],
+            # code=player["code"],
+            defaults={
+                "code": player["code"],
+                "dreamteam_count": player["dreamteam_count"],
+                "in_dreamteam": player["in_dreamteam"],
+                "element_type": player["element_type"],
+                "ep_next": player["ep_next"],
+                "ep_this": player["ep_this"],
+                "form": player["form"],
+                "value_form": player["value_form"],
+                "selected_by_percent": player["selected_by_percent"],
+                "points_per_game": player["points_per_game"],
+                "now_cost": player["now_cost"],
+                "web_name": player["web_name"],
+                "first_name": player["first_name"],
+                "second_name": player["second_name"],
+                "special": player["special"],
+                "squad_number": player["squad_number"],
+                "status": player["status"],
+                "photo": player["photo"],
+                "photo_url": f"https://resources.premierleague.com/premierleague/photos/players/250x250/p{player['code']}.png",
+                "event_points": player["event_points"],
+                "team": player["team"],
+                "team_code": player["team_code"],
+                "total_points": player["total_points"],
+                "transfers_in": player["transfers_in"],
+                "transfers_out": player["transfers_out"],
+                "goals_scored": player["goals_scored"],
+                "clean_sheets": player["clean_sheets"],
+                "goals_conceded": player["goals_conceded"],
+                "own_goals": player["own_goals"],
+                "penalties_saved": player["penalties_saved"],
+                "penalties_missed": player["penalties_missed"],
+                "yellow_cards": player["yellow_cards"],
+                "red_cards": player["red_cards"],
+                "saves": player["saves"],
+                "bonus": player["bonus"],
+                "bps": player["bps"],
+                "influence_rank": player["influence_rank"],
+                "creativity_rank": player["creativity_rank"],
+                "threat_rank": player["threat_rank"],
+                "ict_index_rank": player["ict_index_rank"],
+                "now_cost_rank": player["now_cost_rank"],
+                "form_rank": player["form_rank"],
+                "selected_rank": player["selected_rank"],
+                "direct_freekicks_order": player["direct_freekicks_order"],
+                "penalties_order": player["penalties_order"],
+                "influence": player["influence"],
+                "threat": player["threat"],
+                "ict_index": player["ict_index"],
+                "expected_goals": player["expected_goals"],
+            }
+        )
+    return count

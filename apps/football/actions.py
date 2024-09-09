@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
 from . import utils, tasks
+from apps.fantasy import utils as fantasy_utils
 
 
 @admin.action(description=_("Update leagues"))
@@ -51,13 +52,34 @@ def update_players_action(model_admin, request, queryset):
     model_admin.message_user(request, _("Players update task started!"))
 
 
-@admin.action(description=_("Update positions"))
-def update_positions_action(model_admin, request, queryset):
-    utils.update_positions()
-    model_admin.message_user(request, _("Positions updated!"))
+@admin.action(description=_("Update types(positions included)"))
+def update_types_action(model_admin, request, queryset):
+    utils.update_types()
+    model_admin.message_user(request, _("Types(positions included) updated!"))
 
 
 @admin.action(description=_("Update fixture states"))
 def update_fixture_states_action(model_admin, request, queryset):
     utils.update_fixture_states()
     model_admin.message_user(request, _("Fixture states updated!"))
+
+
+@admin.action(description=_("Update fixture details"))
+def update_fixture_details(model_admin, request, queryset):
+    for fixture in queryset:
+        utils.update_fixture_by_id(fixture.remote_id)
+    model_admin.message_user(request, _("Chosen fixture details updated!"))
+
+
+@admin.action(description=_("Update fixture player round points"))
+def update_fixture_player_round_points(model_admin, request, queryset):
+    for fixture in queryset:
+        fantasy_utils.update_fixture_player_rnd_points(fixture)
+    model_admin.message_user(request, _("Chosen fixture player round points updated."))
+
+
+@admin.action(description=_("Update PremierLeague players Statistics"))
+def update_premierleague_players_action(model_admin, request, queryset):
+    """ Update PremierLeague Player Statistics """
+    utils.update_premierleague_status_by_players()
+    model_admin.message_user(request, _("Update PremierLeague Player Statistics!"))

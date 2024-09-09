@@ -5,6 +5,16 @@ urlpatterns = [
     path("formation/", views.FormationListAPIView.as_view(), name="formation-list"),
     path("team-create/", views.TeamCreateAPIView.as_view(), name="team-create"),
     path("team/<int:pk>/", views.TeamDetailAPIView.as_view(), name="team-detail"),
+    path(
+        "squad/<int:pk>/", views.SquadDetailUpdateAPIView.as_view(), name="squad-detail-update"
+    ),
+    path("squad-player/<int:pk>/", views.SquadPlayerDetailUpdateAPIView.as_view(), name="squad-player-detail-update"),
+    path("squad/substitute/", views.SquadSubstituteAPIView.as_view(), name="squad-substitute"),
 
     path("transfer/", views.TransferAPIView.as_view(), name="player-transfer"),
+
+    path("league/public/", views.PublicLeagueListAPIView.as_view(), name="public-league-list"),
+    path("league/create/", views.LeagueCreateAPIView.as_view(), name="league-create"),
+    path("league/join/", views.LeagueJoinAPIView.as_view(), name="league-join"),
+    path("league/<str:invite_code>/", views.PrivateLeagueDetailAPIView.as_view(), name="private-league-detail"),
 ]

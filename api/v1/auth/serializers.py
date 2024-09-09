@@ -121,6 +121,13 @@ class UserRegisterConfirmSerializer(serializers.ModelSerializer):
         user_otp.save(update_fields=["is_confirmed"])
         return user
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        token_data = instance.generate_refresh_token()
+        data["access"] = token_data["access"]
+        data["refresh"] = token_data["refresh"]
+        return data
+
 
 # class UserResetPasswordSerializer(serializers.ModelSerializer):
 #     class Meta:

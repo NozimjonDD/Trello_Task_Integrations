@@ -1,7 +1,17 @@
 from rest_framework import serializers
 
+from apps.common import models as common_models
 from apps.fantasy import models as fantasy_models
 from apps.football import models as football_models
+
+
+class CommonNewsCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = common_models.NewsCategory
+        fields = (
+            "id",
+            "title",
+        )
 
 
 class CommonPositionSerializer(serializers.ModelSerializer):
@@ -14,8 +24,18 @@ class CommonPositionSerializer(serializers.ModelSerializer):
         )
 
 
+class PlayerImageFormetion(serializers.ModelSerializer):
+    class Meta:
+        model = football_models.Club
+        fields = (
+            "kit_home",
+            "kit_away",
+        )
+
+
 class CommonClubSerializer(serializers.ModelSerializer):
     logo = serializers.URLField(source="logo_path")
+    kit = serializers.ImageField(source="kit_home")
 
     class Meta:
         model = football_models.Club
@@ -25,16 +45,34 @@ class CommonClubSerializer(serializers.ModelSerializer):
             "short_name",
             "logo",
             "kit",
+            # "kit_home",
+            # "kit_away",
             "founded_year",
         )
 
+    def to_representation(self, instance: football_models.Club):
+        data = super().to_representation(instance)
+
+        # if Round.objects.filter(fixtures__away_club)
+        # if instance.kit_home:
+        #     data['kit'] = PlayerImageFormetion(instance, context=self.context, many=False).data
+        # else:
+        #     pass
+
+        data['game_location'] = "home"
+
+        return data
+
 
 class CommonFormationSerializer(serializers.ModelSerializer):
+    scheme = serializers.ListField(source="scheme_as_list")
+
     class Meta:
         model = fantasy_models.Formation
         fields = (
             "id",
             "title",
+            "scheme",
         )
 
 
@@ -46,7 +84,16 @@ class CommonFormationPositionSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "position",
-            "index",
+        )
+
+
+class CommonSportMonksTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = football_models.SportMonksType
+        fields = (
+            "id",
+            "name",
+            "code",
         )
 
 
@@ -69,4 +116,40 @@ class CommonPlayerSerializer(serializers.ModelSerializer):
             "position",
 
             "market_value",
+            "pretty_market_value",
+        )
+
+
+class CommonFixtureStateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = football_models.FixtureState
+        fields = (
+            "id",
+            "state",
+            "title",
+        )
+
+
+class CommonRoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = football_models.Round
+        fields = (
+            "id",
+            "name",
+            "is_finished",
+            "is_current",
+            "starting_at",
+            "ending_at",
+        )
+
+
+class CommonLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = fantasy_models.Level
+        fields = (
+            "id",
+            "title",
+            "icon",
+            "level_point",
+            "description",
         )

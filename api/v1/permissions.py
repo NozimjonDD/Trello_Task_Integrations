@@ -20,3 +20,13 @@ class AdminModeratorPermission(BasePermission):
         if not request.user.is_authenticated:
             return False
         return request.user.role == 'Admin' or request.user.role == 'Moderator'
+
+
+class TeamCompleteUserPermission(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if not user.is_authenticated:
+            return False
+        if not hasattr(user, "team"):
+            return False
+        return True

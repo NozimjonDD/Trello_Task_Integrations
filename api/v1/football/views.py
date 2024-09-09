@@ -1,11 +1,17 @@
-from rest_framework import generics, permissions
+from django.conf import settings
 
-from . import serializers
+from rest_framework import generics, permissions
+from rest_framework import views
+from rest_framework.response import Response
+from apps.football.utils import update_premierleague_status_by_players
+from . import serializers, filtersets
 from apps.football import models
+
+from api.v1 import common_serializers
 
 
 class PlayerListAPIView(generics.ListAPIView):
-    queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
+    queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=settings.PREMIER_LEAGUE_ID)
     serializer_class = serializers.PlayerListSerializer
     permission_classes = [permissions.IsAuthenticated]
     search_fields = ("first_name", "last_name", "common_name", "full_name",)
@@ -26,6 +32,66 @@ class PlayerListAPIView(generics.ListAPIView):
 
 
 class PlayerDetailAPIView(generics.RetrieveAPIView):
-    queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=271)
+    queryset = models.Player.objects.filter(is_deleted=False, club__league__remote_id=settings.PREMIER_LEAGUE_ID)
     serializer_class = serializers.PlayerDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class UpdatePremierLeagueStat(views.APIView):
+    def post(self, request, *args, **kwargs):
+        count = update_premierleague_status_by_players()
+
+        return Response({"message": "class A", "count": count})
+
+
+class ClubListAPIView(generics.ListAPIView):
+    queryset = models.Club.objects.filter(is_deleted=False, league__remote_id=settings.PREMIER_LEAGUE_ID)
+    serializer_class = serializers.ClubListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    search_fields = ("name", "short_name",)
+    pagination_class = None
+
+
+class RoundListAPIView(generics.ListAPIView):
+    queryset = models.Round.objects.filter(is_deleted=False, league__remote_id=settings.PREMIER_LEAGUE_ID)
+    serializer_class = common_serializers.CommonRoundSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    search_fields = (
+        "name",
+    )
+    pagination_class = None
+
+    def get_queryset(self):
+        qs = self.queryset
+        return qs.order_by("starting_at", )
+
+
+class FixtureListAPIView(generics.ListAPIView):
+    queryset = models.Fixture.objects.filter(
+        is_deleted=False, season__league__remote_id=settings.PREMIER_LEAGUE_ID
+    )
+    serializer_class = serializers.FixtureListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    search_fields = (
+        "title",
+        "home_club__name",
+        "away_club__name",
+    )
+    filterset_class = filtersets.FixtureListFilter
+    ordering_fields = ("match_date",)
+
+    def get_queryset(self):
+        qs = self.queryset.select_related("home_club", "away_club", "state", )
+        return qs
+
+
+class FixtureDetailAPIView(generics.RetrieveAPIView):
+    queryset = models.Fixture.objects.filter(
+        is_deleted=False, season__league__remote_id=settings.PREMIER_LEAGUE_ID
+    )
+    serializer_class = serializers.FixtureDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = self.queryset.prefetch_related("events", "statistics", "events__player", "events__related_player")
+        return qs

@@ -1,8 +1,10 @@
 from django.contrib import admin
+from django.conf import settings
+
 from django.utils.html import format_html
 
 from django.utils.translation import gettext_lazy as _
-
+from django.utils.html import mark_safe
 from . import models, actions
 
 
@@ -45,18 +47,138 @@ class RoundAdmin(admin.ModelAdmin):
 
 @admin.register(models.FixtureState)
 class FixtureStateAdmin(admin.ModelAdmin):
-    list_display = ("state", "title", "short_title", "id",)
-    list_display_links = ("state", "id",)
+    list_display = ("title", "short_title", "state", "id",)
+    list_display_links = ("title", "id",)
     search_fields = ("state", "title", "short_title", "id", "remote_id",)
     actions = (actions.update_fixture_states_action,)
 
 
+class FixtureStatisticInlineAdmin(admin.StackedInline):
+    model = models.FixtureStatistic
+    extra = 0
+    exclude = ("is_deleted", "deleted_at",)
+    autocomplete_fields = ("fixture", "type", "club",)
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class FixtureEventInlineAdmin(admin.StackedInline):
+    model = models.FixtureEvent
+    extra = 0
+    exclude = ("is_deleted", "deleted_at",)
+    autocomplete_fields = ("fixture", "type", "sub_type", "club", "player", "related_player",)
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class LineupInlineAdmin(admin.StackedInline):
+    model = models.Lineup
+    extra = 0
+    exclude = ("is_deleted", "deleted_at",)
+    autocomplete_fields = ("fixture", "type", "club", "player",)
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(models.Fixture)
 class FixtureAdmin(admin.ModelAdmin):
-    list_display = ("title", "season", "round", "state", "result_info", "match_date", "id",)
+    list_display = (
+        "title", "result_score", "season", "round", "state", "result_info", "match_date", "id",)
     list_display_links = ("title", "id",)
     search_fields = ("title", "season__name", "round__name", "state__title", "remote_id", "id",)
     autocomplete_fields = ("season", "round", "state", "home_club", "away_club",)
+    list_filter = ("round",)
+    actions = (actions.update_fixture_details, actions.update_fixture_player_round_points,)
+    inlines = (FixtureEventInlineAdmin, LineupInlineAdmin,)
+
+    def result_score(self, obj):
+        if obj.home_club_score is not None and obj.away_club_score is not None:
+            return f"{obj.home_club_score}:{obj.away_club_score}"
+        return "-:-"
+
+    result_score.short_description = _("Result score")
+
+
+@admin.register(models.FixtureEvent)
+class FixtureEventAdmin(admin.ModelAdmin):
+    list_display = (
+        "fixture",
+        "type",
+        "sub_type",
+        "club",
+        "player",
+        "related_player",
+        "minute",
+        "extra_minute",
+        "injured",
+        "on_bench",
+        "result",
+        "info",
+        "created_at",
+        "id",
+    )
+    exclude = ("is_deleted", "deleted_at",)
+    list_display_links = ("fixture", "id",)
+    search_fields = ("fixture__title", "player__full_name", "type__name",)
+    autocomplete_fields = ("fixture", "type", "sub_type", "club", "player", "related_player",)
+    ordering = ("-created_at", "-minute",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related(
+            "fixture", "type", "sub_type", "club", "player",
+            "related_player",
+        )
+        return qs
+
+
+@admin.register(models.FixtureStatistic)
+class FixtureStatisticAdmin(admin.ModelAdmin):
+    list_display = (
+        "fixture",
+        "type",
+        "club",
+        "value",
+        "location",
+        "created_at",
+        "id",
+    )
+    exclude = ("is_deleted", "deleted_at",)
+    list_display_links = ("fixture", "id",)
+    search_fields = ("fixture__title", "club__name", "type__name",)
+    autocomplete_fields = ("fixture", "type", "club",)
+
+
+@admin.register(models.Lineup)
+class LineupAdmin(admin.ModelAdmin):
+    list_display = ("fixture", "club", "player", "type", "created_at", "remote_id", "id",)
+    list_display_links = ("fixture", "id",)
+    search_fields = ("fixture__title", "club__name", "player__full_name", "remote_id", "id",)
+    autocomplete_fields = ("fixture", "type", "club", "player",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related("fixture", "type", "club", "player", )
+        return qs
 
 
 @admin.register(models.Club)
@@ -77,12 +199,20 @@ class ClubAdmin(admin.ModelAdmin):
     logo_html.short_description = _("Logo")
 
 
+@admin.register(models.SportMonksType)
+class SportMonksTypeAdmin(admin.ModelAdmin):
+    list_display = ("name", "model_type", "code", "developer_name", "remote_id", "id",)
+    list_display_links = ("name", "id",)
+    search_fields = ("name", "model_type", "code", "developer_name", "id", "remote_id",)
+    actions = (actions.update_types_action,)
+
+
 @admin.register(models.Position)
 class PositionAdmin(admin.ModelAdmin):
     list_display = ("name", "short_name", "code", "id",)
     list_display_links = ("name", "id",)
     search_fields = ("name", "short_name", "code", "id", "remote_id",)
-    actions = (actions.update_positions_action,)
+    actions = (actions.update_types_action,)
 
 
 @admin.register(models.Player)
@@ -107,7 +237,8 @@ class PlayerAdmin(admin.ModelAdmin):
         "id",
     )
     list_display_links = ("first_name", "id",)
-    search_fields = ("first_name", "last_name", "common_name", "club__name", "position__name",)
+    list_filter = ("club", "position",)
+    search_fields = ("first_name", "last_name", "common_name", "club__name", "position__name", "remote_id",)
     autocomplete_fields = ("club", "position",)
 
     def profile_pic(self, obj):
@@ -119,6 +250,8 @@ class PlayerAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request).select_related("club", "position", )
+        if qs.filter(club__league__remote_id=settings.PREMIER_LEAGUE_ID).exists():
+            qs = qs.filter(club__league__remote_id=settings.PREMIER_LEAGUE_ID)
         return qs
 
 
@@ -129,3 +262,44 @@ class ClubPlayerAdmin(admin.ModelAdmin):
     search_fields = ("club__name", "player__full_name",)
     list_filter = ("is_captain", "is_current_club", "start_date", "end_date",)
     autocomplete_fields = ("club", "player",)
+
+
+@admin.register(models.PremierLeagueStatusByPlayer)
+class PremierLeagueStatusByPlayerAdmin(admin.ModelAdmin):
+    actions = (actions.update_premierleague_players_action,)
+
+    list_display = ("image_tag", "now_cost", "first_name", "second_name",
+                    "web_name", "total_points", "selected_by_percent", "goals_scored", "team", "threat",
+                    "own_goals", "penalties_saved", "bonus",)
+
+    search_fields = ("web_name", "first_name", "second_name",)
+
+    def image_tag(self, obj):
+        if obj.photo_url:
+            return mark_safe('<img class="image" src="%s" width="50" height="50" />' % (obj.photo_url))
+        return None
+
+    image_tag.short_description = _("Profile picture")
+
+
+@admin.register(models.CommonPlayer)
+class CommonPlayerAdmin(admin.ModelAdmin):
+    """ here PremierLeagueStatusByPlayer model and Player model relations"""
+
+    list_display = ("image_tag_ft", "fantasy_player", "image_tag_sm", "sportmonks_player")
+    autocomplete_fields = ("sportmonks_player", "fantasy_player",)
+
+    def image_tag_ft(self, obj):
+        if obj.fantasy_player:
+            return mark_safe('<img class="image" src="%s" width="50" height="50" />' % (obj.fantasy_player.photo_url))
+        return None
+
+    image_tag_ft.short_description = _("fantasy picture")
+
+    def image_tag_sm(self, obj):
+        if obj.sportmonks_player:
+            return mark_safe(
+                '<img class="image" src="%s" width="50" height="50" />' % (obj.sportmonks_player.profile_picture_path))
+        return None
+
+    image_tag_sm.short_description = _("sportmonks picture")
