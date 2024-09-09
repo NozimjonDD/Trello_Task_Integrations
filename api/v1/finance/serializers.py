@@ -31,8 +31,8 @@ class TariffOptionListSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "title",
-            "amount",
             "price",
+            "amount",
             "discount_price",
         )
 
