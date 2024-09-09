@@ -153,10 +153,23 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         user = self.context["request"].user
         old_password = attrs.get("old_password")
+        new_password = attrs.get("new_password")
+
+        if old_password == new_password:
+            raise serializers.ValidationError(
+                code="same_password",
+                detail={"new_password": [_("New password must be different from the old password.")]},
+            )
 
         if not user.check_password(old_password):
             raise serializers.ValidationError(
                 code="invalid_password",
-                detail={"old_password": [_("Incorrect password!")]},
+                detail={"old_password": [_("Invalid old password!")]},
             )
         return attrs
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        user.set_password(validated_data["new_password"])
+        user.save(update_fields=["password"])
+        return user
