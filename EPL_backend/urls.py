@@ -11,6 +11,7 @@ from .swagger_conf import swagger_urlpatterns
 urlpatterns = [
     path('set-language/', set_language, name='set_language'),
     path('i18n/', include('django.conf.urls.i18n')),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
 ]
 
 # i18n URL patterns

@@ -50,6 +50,9 @@ THIRD_PARTY_APPS = [
     # "mptt",
     "auditlog",
     "rest_framework_simplejwt",
+
+    "ckeditor",
+    "ckeditor_uploader",
 ]
 INSTALLED_APPS = DJANGO_APPS + MY_APPS + THIRD_PARTY_APPS
 
@@ -221,3 +224,7 @@ OTP_EXPIRATION_TIME = 300  # seconds
 # SPORTMONKS
 SPORTMONKS_APIKEY = os.environ.get("SPORTMONKS_APIKEY", default="dummy")
 PREMIER_LEAGUE_ID = 8
+
+# CKEDITOR
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
+CKEDITOR_UPLOAD_PATH = "uploads/"

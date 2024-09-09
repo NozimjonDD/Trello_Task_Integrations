@@ -1,7 +1,17 @@
 from rest_framework import serializers
 
+from apps.common import models as common_models
 from apps.fantasy import models as fantasy_models
 from apps.football import models as football_models
+
+
+class CommonNewsCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = common_models.NewsCategory
+        fields = (
+            "id",
+            "title",
+        )
 
 
 class CommonPositionSerializer(serializers.ModelSerializer):

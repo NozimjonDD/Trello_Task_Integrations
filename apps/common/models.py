@@ -2,6 +2,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
+from ckeditor_uploader.fields import RichTextUploadingField
+
 
 class BaseModel(models.Model):
     class Meta:
@@ -43,7 +45,7 @@ class News(BaseModel):
 
     title = models.CharField(max_length=255, verbose_name=_("Title"))
     image = models.ImageField(upload_to="common/news/", verbose_name=_("Image"))
-    content = models.TextField(verbose_name=_("Content"))
+    content = RichTextUploadingField(verbose_name=_("Content"))
 
     published_at = models.DateTimeField(null=True, blank=True, verbose_name=_("Published at"), default=timezone.now)
 
