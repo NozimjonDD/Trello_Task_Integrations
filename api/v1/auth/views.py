@@ -28,3 +28,15 @@ class ChangePasswordAPIView(generics.CreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.ChangePasswordSerializer
     queryset = models.User.objects.all()
+
+
+class DeleteAccountAPIView(generics.CreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.DeleteAccountSerializer
+    queryset = models.User.objects.all()
+
+
+class DeleteAccountConfirmAPIView(generics.CreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.DeleteAccountConfirmSerializer
+    queryset = models.User.objects.all()

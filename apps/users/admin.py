@@ -28,11 +28,11 @@ class UserAdmin(DjangoUserAdmin):
     list_display = (
         "phone_number", "username", "profile_pic_html", "first_name",
         "last_name", "middle_name", "pretty_balance", "coin_balance", "role", "is_active", "is_staff", "is_superuser",
-        "date_joined",
+        "date_joined", "is_deleted",
         "id",
     )
     list_display_links = ("phone_number",)
-    list_filter = ("role", "is_active", "is_staff", "is_superuser", "date_joined")
+    list_filter = ("role", "is_active", "is_staff", "is_superuser", "is_deleted", "date_joined")
     fieldsets = (
         (None, {"fields": ("phone_number", "username", "password")}),
         (

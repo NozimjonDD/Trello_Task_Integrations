@@ -12,4 +12,6 @@ urlpatterns = [
 
     # path("reset-password/", views.ResetPasswordAPIView.as_view(), name="reset_password"),
     path("change-password/", views.ChangePasswordAPIView.as_view(), name="change_password"),
+    path("delete-account/", views.DeleteAccountAPIView.as_view(), name="delete_account"),
+    path("delete-account/confirm/", views.DeleteAccountConfirmAPIView.as_view(), name="delete_account_confirm"),
 ]

@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
@@ -172,4 +173,92 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         user.set_password(validated_data["new_password"])
         user.save(update_fields=["password"])
+        return user
+
+
+class DeleteAccountSerializer(serializers.ModelSerializer):
+    secret = serializers.CharField(max_length=50, read_only=True)
+
+    class Meta:
+        model = models.User
+        fields = (
+            "id",
+            "secret",
+        )
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        return user
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        otp = instance.generate_otp()
+        data["secret"] = otp.secret
+        return data
+
+
+class DeleteAccountConfirmSerializer(serializers.ModelSerializer):
+    secret = serializers.CharField(max_length=100, write_only=True)
+    otp = serializers.CharField(
+        max_length=10,
+        min_length=4,
+        error_messages={
+            "min_length": _("OTP must be at least 4 characters long."),
+            "max_length": _("OTP must be at most 10 characters long."),
+        },
+        write_only=True
+    )
+
+    class Meta:
+        model = models.User
+        fields = (
+            "id",
+            "secret",
+            "otp",
+        )
+
+    def validate(self, attrs):
+        secret = attrs.get("secret")
+        otp = attrs.get("otp")
+
+        try:
+            user_otp = models.UserOTP.objects.get(
+                secret=secret,
+                is_confirmed=False,
+                user__is_deleted=False,
+            )
+        except models.UserOTP.DoesNotExist:
+            raise serializers.ValidationError(
+                code="invalid_secret",
+                detail={
+                    "secret": [_("Invalid secret.")]
+                }
+            )
+
+        if user_otp.is_expired():
+            raise serializers.ValidationError(
+                code="expired_otp",
+                detail={
+                    "otp": [_("OTP is expired.")]
+                }
+            )
+
+        if user_otp.code != otp:
+            raise serializers.ValidationError(
+                code="invalid_otp",
+                detail={
+                    "otp": [_("Invalid OTP.")]
+                }
+            )
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+
+        user_otp = models.UserOTP.objects.get(secret=validated_data["secret"])
+        user = user_otp.user
+        user.delete_account()
+
+        user_otp.is_confirmed = True
+        user_otp.save(update_fields=["is_confirmed"])
         return user

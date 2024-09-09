@@ -19,7 +19,7 @@ class User(AbstractUser, BaseModel):
         error_messages={
             "unique": _("A user with that phone number already exists."),
         },
-        max_length=13,
+        max_length=100,
         validators=[common_utils.phone_number_validator]
     )
     username_validator = UnicodeUsernameValidator()
@@ -109,6 +109,17 @@ class User(AbstractUser, BaseModel):
             update_last_login(None, self)
 
         return data
+
+    def delete_account(self):
+        """
+        change user phone number to: deleted__+998901234567__timestamp
+        :return: None
+        """
+        self.is_active = False
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.phone_number = f"deleted__{self.phone_number}__{timezone.now().timestamp()}"
+        self.save()
 
 
 class AccountSettings(BaseModel):
