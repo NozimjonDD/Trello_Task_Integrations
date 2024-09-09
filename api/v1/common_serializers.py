@@ -77,6 +77,16 @@ class CommonFormationPositionSerializer(serializers.ModelSerializer):
         )
 
 
+class CommonSportMonksTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = football_models.SportMonksType
+        fields = (
+            "id",
+            "name",
+            "code",
+        )
+
+
 class CommonPlayerSerializer(serializers.ModelSerializer):
     club = CommonClubSerializer()
     position = CommonPositionSerializer()
