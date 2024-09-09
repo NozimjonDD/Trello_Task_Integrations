@@ -85,6 +85,8 @@ JAZZMIN_SETTINGS = {
         "users.UserOTP",
 
         "common",
+        "common.NewsCategory",
+        "common.News",
 
         "fantasy",
         "fantasy.Team",
@@ -130,6 +132,8 @@ JAZZMIN_SETTINGS = {
         "users.UserOTP": "fas fa-key",
 
         "common": "fas fa-cogs",
+        "common.NewsCategory": "fas fa-list",
+        "common.News": "fas fa-newspaper",
 
         "fantasy": "fas fa-star",
         "fantasy.Team": "fas fa-users",
