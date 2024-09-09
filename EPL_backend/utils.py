@@ -39,7 +39,7 @@ def _handle_invalid_token_error(exc, context):
             "errors": [
                 {"error": "token_not_valid",
                  "error_field": None,
-                 "message": str(exc.detail["messages"][0]["message"])}
+                 "message": str(exc.detail["detail"])}
             ]
         }
     return response
