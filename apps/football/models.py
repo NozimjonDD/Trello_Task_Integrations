@@ -47,6 +47,14 @@ class League(FootballBaseModel):
     def __str__(self):
         return self.name
 
+    def get_current_season(self):
+        season = self.seasons.filter(is_current=True).first()
+        return season
+
+    def get_last_season(self):
+        season = self.seasons.filter(is_finished=True).order_by("-ending_at").first()
+        return season
+
 
 class Season(FootballBaseModel):
     class Meta:
@@ -99,6 +107,11 @@ class Round(FootballBaseModel):
     @classmethod
     def get_current_gw(cls):
         gw = cls.objects.filter(is_current=True).first()
+        return gw
+
+    @classmethod
+    def get_last_gw(cls):
+        gw = cls.objects.filter(ending_at__lte=timezone.now().today()).order_by("-ending_at").first()
         return gw
 
     @classmethod
