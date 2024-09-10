@@ -161,22 +161,3 @@ class TariffOrder(BaseModel):
 
         self.status = TariffOrderStatusChoices.SUCCESS
         self.save(update_fields=["status"])
-
-
-class Subscription(BaseModel):
-    class Meta:
-        db_table = "subscription"
-        verbose_name = "Subscription"
-        verbose_name_plural = "Subscriptions"
-
-    user = models.OneToOneField(to="users.User", on_delete=models.CASCADE, related_name="subscriptions", null=True)
-    tariff = models.ManyToManyField(to="Tariff", related_name="subscription_tariffs", blank=True)
-    total_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
-
-    @property
-    def calculate_total_price(self):
-        if self.tariff:
-            self.total_price = self.tariff.all().aggregate(total=Sum("price")).get("total", 0)
-            self.save()
-            return self.total_price
-        return None
