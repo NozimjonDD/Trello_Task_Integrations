@@ -183,6 +183,7 @@ class CoinTariff(BaseModel):
         max_digits=18,
         decimal_places=2,
         verbose_name=_("Price"),
+        help_text=_("uzs"),
     )
     discount_price = models.DecimalField(
         max_digits=18,
@@ -190,6 +191,7 @@ class CoinTariff(BaseModel):
         null=True,
         blank=True,
         verbose_name=_("Discount Price"),
+        help_text=_("uzs"),
     )
     ordering = models.IntegerField(default=1, verbose_name=_("Ordering"))
 
