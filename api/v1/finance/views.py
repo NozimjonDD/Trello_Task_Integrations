@@ -6,10 +6,10 @@ from api.v1.finance import serializers
 from apps.finance import models
 
 
-class TariffListAPIView(ListAPIView):
-    queryset = models.Tariff.objects.all()
-    permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = serializers.TariffListSerializer
+# class TariffListAPIView(ListAPIView):
+#     queryset = models.Tariff.objects.all()
+#     permission_classes = (permissions.IsAuthenticated,)
+#     serializer_class = serializers.TariffListSerializer
 
 
 class TariffOptionListAPIView(ListAPIView):

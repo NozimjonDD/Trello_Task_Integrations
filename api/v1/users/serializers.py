@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from api.v1 import common_serializers
 from apps.fantasy import models as fantasy_models
-from apps.finance.models import Tariff, TariffOption
+from apps.finance import models as finance_models
 from apps.football import models as football_models
 from apps.users import models
 
@@ -91,41 +91,18 @@ class DeviceCreateSerializer(serializers.ModelSerializer):
         return instance
 
 
-class UserTariffCaseListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TariffOption
-        fields = (
-            "id",
-            "title",
-            "tariff",
-            "amount",
-            "price",
-            "discount_price",
-        )
-
-
 class UserTariffListSerializer(serializers.ModelSerializer):
+    tariff = common_serializers.CommonTariffSerializer()
+    tariff_option = common_serializers.CommonTariffOptionSerializer()
+    season = common_serializers.CommonSeasonSerializer()
+
     class Meta:
-        model = Tariff
+        model = finance_models.UserTariff
         fields = (
             "id",
-            "title",
-            "description",
-            "type",
-        )
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["tariff_cases"] = UserTariffCaseListSerializer(instance.tariff_cases.all(), many=True).data
-        return data
-
-
-class TariffDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tariff
-        fields = (
-            "id",
-            "title",
-            "description",
-            "type",
+            "season",
+            "round",
+            "tariff",
+            "tariff_option",
+            "amount",
         )

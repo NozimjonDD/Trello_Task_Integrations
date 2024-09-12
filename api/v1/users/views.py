@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
-from apps.finance.models import Tariff
 from . import serializers
 from apps.users import models
+from apps.finance import models as finance_models
 
 
 class AccountDetailAPIView(generics.RetrieveAPIView):
@@ -13,9 +13,14 @@ class AccountDetailAPIView(generics.RetrieveAPIView):
 
 
 class UserTariffListAPIView(generics.ListAPIView):
-    queryset = Tariff.objects.all()
+    queryset = finance_models.UserTariff.objects.filter(is_deleted=False)
     serializer_class = serializers.UserTariffListSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = self.queryset.filter(user=self.request.user)
+        qs = qs.select_related("tariff", "tariff_option", "season")
+        return qs
 
 
 class UserDeviceCreateAPIView(generics.CreateAPIView):
