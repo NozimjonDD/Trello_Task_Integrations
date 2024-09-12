@@ -77,6 +77,13 @@ class UserAdmin(DjangoUserAdmin):
     profile_pic_html.short_description = _("Profile picture")
 
 
+@admin.register(models.Device)
+class DeviceAdmin(admin.ModelAdmin):
+    list_display = ("user", "name", "device_type", "created_at", "id",)
+    list_display_links = ("user", "id",)
+    search_fields = ("name", "device_type",)
+
+
 @admin.register(models.UserOTP)
 class UserOTPAdmin(admin.ModelAdmin):
     list_display = ("user", "code", "is_confirmed", "is_expired", "created_at")

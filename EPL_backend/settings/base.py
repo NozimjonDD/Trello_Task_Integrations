@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+import firebase_admin
+from firebase_admin import credentials
+
 import environ  # noqa
 from ..jazzmin import *  # noqa
 
@@ -228,3 +231,7 @@ PREMIER_LEAGUE_ID = 8
 # CKEDITOR
 CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
 CKEDITOR_UPLOAD_PATH = "uploads/"
+
+# FIREBASE
+cred = credentials.Certificate("apps/notification/data/firebase-adminsdk.json")
+firebase_admin.initialize_app(cred)
