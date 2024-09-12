@@ -239,6 +239,10 @@ class CoinOrder(BaseModel):
     def __str__(self):
         return f"{self.user} - {self.coin_tariff}"
 
+    def apply_coin_order(self):
+        self.user.coin_balance += self.coin_amount
+        self.user.save(update_fields=["coin_balance"])
+
 
 class Transaction(BaseModel):
     class Meta:

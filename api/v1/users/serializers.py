@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from api.v1 import common_serializers
 from apps.fantasy import models as fantasy_models
-from apps.finance.models import Tariff, TariffOption
+from apps.finance import models as finance_models
 from apps.football import models as football_models
 from apps.users import models
 
@@ -62,41 +62,47 @@ class AccountDetailSerializer(serializers.ModelSerializer):
         return common_serializers.CommonRoundSerializer(current_round).data
 
 
-class UserTariffCaseListSerializer(serializers.ModelSerializer):
+class DeviceCreateSerializer(serializers.ModelSerializer):
+    fcm_token = serializers.CharField()
+
     class Meta:
-        model = TariffOption
+        model = models.Device
         fields = (
             "id",
-            "title",
-            "tariff",
-            "amount",
-            "price",
-            "discount_price",
+            "device_id",
+            "fcm_token",
+            "device_type",
+            "name",
         )
+        extra_kwargs = {
+            "device_id": {"required": True},
+        }
+
+    def create(self, validated_data):
+        instance, _ = models.Device.objects.update_or_create(
+            device_id=validated_data["device_id"],
+            defaults={
+                "user": self.context["request"].user,
+                "device_type": validated_data["device_type"],
+                "fcm_token": validated_data["fcm_token"],
+                "name": validated_data["name"],
+            }
+        )
+        return instance
 
 
 class UserTariffListSerializer(serializers.ModelSerializer):
+    tariff = common_serializers.CommonTariffSerializer()
+    tariff_option = common_serializers.CommonTariffOptionSerializer()
+    season = common_serializers.CommonSeasonSerializer()
+
     class Meta:
-        model = Tariff
+        model = finance_models.UserTariff
         fields = (
             "id",
-            "title",
-            "description",
-            "type",
-        )
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["tariff_cases"] = UserTariffCaseListSerializer(instance.tariff_cases.all(), many=True).data
-        return data
-
-
-class TariffDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tariff
-        fields = (
-            "id",
-            "title",
-            "description",
-            "type",
+            "season",
+            "round",
+            "tariff",
+            "tariff_option",
+            "amount",
         )

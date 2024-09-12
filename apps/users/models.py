@@ -150,6 +150,24 @@ class AccountSettings(BaseModel):
         return f"{self.user} - account settings"
 
 
+class Device(BaseModel):
+    class Meta:
+        db_table = "user_device"
+        verbose_name = _("User device")
+        verbose_name_plural = _("User devices")
+
+    user = models.ForeignKey(
+        to="users.User", on_delete=models.CASCADE, verbose_name=_("User"), related_name="devices"
+    )
+    device_id = models.CharField(verbose_name=_("Device ID"), max_length=255, null=True, unique=True)
+    fcm_token = models.CharField(verbose_name=_("FCM token"), max_length=255, unique=True)
+    name = models.CharField(verbose_name=_("Device name"), max_length=255)
+    device_type = models.CharField(verbose_name=_("Device type"), max_length=20)
+
+    def __str__(self):
+        return f"{self.user} - {self.name}"
+
+
 class GroupProxyModel(AbstractGroup):
     class Meta:
         proxy = True

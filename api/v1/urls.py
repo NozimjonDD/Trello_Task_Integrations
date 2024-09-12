@@ -7,4 +7,5 @@ urlpatterns = [
     path("fantasy/", include("api.v1.fantasy.urls")),
     path("football/", include("api.v1.football.urls")),
     path("finance/", include("api.v1.finance.urls")),
+    path("notification/", include("api.v1.notification.urls")),
 ]

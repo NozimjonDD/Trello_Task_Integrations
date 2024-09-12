@@ -3,6 +3,8 @@ from rest_framework import serializers
 from apps.common import models as common_models
 from apps.fantasy import models as fantasy_models
 from apps.football import models as football_models
+from apps.finance import models as finance_models
+from apps.notification import models as notification_models
 
 
 class CommonNewsCategorySerializer(serializers.ModelSerializer):
@@ -130,6 +132,20 @@ class CommonFixtureStateSerializer(serializers.ModelSerializer):
         )
 
 
+class CommonSeasonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = football_models.Season
+        fields = (
+            "id",
+            "name",
+            "league",
+            "is_current",
+            "is_finished",
+            "starting_at",
+            "ending_at",
+        )
+
+
 class CommonRoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = football_models.Round
@@ -152,4 +168,47 @@ class CommonLevelSerializer(serializers.ModelSerializer):
             "icon",
             "level_point",
             "description",
+        )
+
+
+class CommonTariffSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = finance_models.Tariff
+        fields = (
+            "id",
+            "title",
+            "description",
+            "type",
+        )
+
+
+class CommonTariffOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = finance_models.TariffOption
+        fields = (
+            "id",
+            "tariff",
+            "title",
+            "amount",
+            "price",
+            "discount_price",
+        )
+
+
+class NotificationTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = notification_models.NotificationType
+        fields = (
+            "type",
+            "icon",
+            "image",
+        )
+
+
+class NotificationTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = notification_models.NotificationTemplate
+        fields = (
+            "route",
+            "button_name",
         )
