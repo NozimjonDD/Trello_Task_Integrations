@@ -62,6 +62,35 @@ class AccountDetailSerializer(serializers.ModelSerializer):
         return common_serializers.CommonRoundSerializer(current_round).data
 
 
+class DeviceCreateSerializer(serializers.ModelSerializer):
+    fcm_token = serializers.CharField()
+
+    class Meta:
+        model = models.Device
+        fields = (
+            "id",
+            "device_id",
+            "fcm_token",
+            "device_type",
+            "name",
+        )
+        extra_kwargs = {
+            "device_id": {"required": True},
+        }
+
+    def create(self, validated_data):
+        instance, _ = models.Device.objects.update_or_create(
+            device_id=validated_data["device_id"],
+            defaults={
+                "user": self.context["request"].user,
+                "device_type": validated_data["device_type"],
+                "fcm_token": validated_data["fcm_token"],
+                "name": validated_data["name"],
+            }
+        )
+        return instance
+
+
 class UserTariffCaseListSerializer(serializers.ModelSerializer):
     class Meta:
         model = TariffOption
