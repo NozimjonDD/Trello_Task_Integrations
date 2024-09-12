@@ -73,6 +73,7 @@ class NotificationTypeChoices(models.TextChoices):
 
 
 class NotificationDetailedEventTypes(models.TextChoices):
+    APP_VERSION_UPDATED = "APP_VERSION_UPDATED", _("App version updated")
     COIN_ORDER_CREATED = "COIN_ORDER_CREATED", _("Coin order created")
     COIN_ORDER_PAYMENT_PROCESSING = "COIN_ORDER_PAYMENT_PROCESSING", _("Coin order payment processing")
     COIN_ORDER_PAYMENT_RECEIVED = "COIN_ORDER_PAYMENT_RECEIVED", _("Coin order payment received")

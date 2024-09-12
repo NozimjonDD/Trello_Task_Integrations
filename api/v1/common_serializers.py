@@ -3,6 +3,7 @@ from rest_framework import serializers
 from apps.common import models as common_models
 from apps.fantasy import models as fantasy_models
 from apps.football import models as football_models
+from apps.notification import models as notification_models
 
 
 class CommonNewsCategorySerializer(serializers.ModelSerializer):
@@ -152,4 +153,23 @@ class CommonLevelSerializer(serializers.ModelSerializer):
             "icon",
             "level_point",
             "description",
+        )
+
+
+class NotificationTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = notification_models.NotificationType
+        fields = (
+            "type",
+            "icon",
+            "image",
+        )
+
+
+class NotificationTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = notification_models.NotificationTemplate
+        fields = (
+            "route",
+            "button_name",
         )

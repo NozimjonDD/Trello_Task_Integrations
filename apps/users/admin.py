@@ -81,7 +81,9 @@ class UserAdmin(DjangoUserAdmin):
 class DeviceAdmin(admin.ModelAdmin):
     list_display = ("user", "name", "device_type", "created_at", "id",)
     list_display_links = ("user", "id",)
-    search_fields = ("name", "device_type",)
+    search_fields = ("user__phone_number", "user__first_name", "name", "device_type",)
+    exclude = ("is_deleted", "deleted_at",)
+    list_filter = ("created_at",)
 
 
 @admin.register(models.UserOTP)

@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
@@ -23,7 +25,7 @@ class NotificationType(BaseModel):
     image = models.ImageField(verbose_name=_("Image"), upload_to="notification_type/images/", null=True, blank=True)
 
     def __str__(self):
-        return f"{self.type}"
+        return self.get_type_display()
 
 
 class NotificationTemplate(BaseModel):
@@ -41,7 +43,7 @@ class NotificationTemplate(BaseModel):
     button_name = models.CharField(verbose_name=_("route button name"), null=True, blank=True)
 
     def __str__(self):
-        return self.type
+        return self.get_type_display()
 
 
 class Notification(BaseModel):
@@ -65,6 +67,14 @@ class Notification(BaseModel):
 
     redirect_url = models.URLField(_("Redirect URL"), null=True, blank=True)
     target_id = models.PositiveIntegerField(verbose_name=_("Target id"), null=True, blank=True)
+
+    send_to_all = models.BooleanField(_("Send to all"), default=False)
+    receivers = models.ManyToManyField(
+        to="users.User",
+        verbose_name=_("Receivers"),
+        related_name="+",
+        blank=True
+    )
 
     is_sent = models.BooleanField(_("Is Sent"), default=False)
     sent_at = models.DateTimeField(_("Sent At"), null=True, blank=True)
@@ -133,6 +143,14 @@ class Notification(BaseModel):
         if self.description:
             return self.description[:100]
         return None
+
+    def save(self, *args, **kwargs):
+        if self.template.type == NotificationDetailedEventTypes.APP_VERSION_UPDATED:
+            self.title_uz = self.template.title_uz
+            self.description_uz = self.template.body_uz.format(**self.context)
+            self.title_ru = self.template.title_ru
+            self.description_ru = self.template.body_ru.format(**self.context)
+        super().save(*args, **kwargs)
 
 
 class UserNotification(BaseModel):
