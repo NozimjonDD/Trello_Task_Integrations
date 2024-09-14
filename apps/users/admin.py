@@ -28,11 +28,11 @@ class UserAdmin(DjangoUserAdmin):
     list_display = (
         "phone_number", "username", "profile_pic_html", "first_name",
         "last_name", "middle_name", "pretty_balance", "coin_balance", "role", "is_active", "is_staff", "is_superuser",
-        "date_joined",
+        "date_joined", "is_deleted",
         "id",
     )
     list_display_links = ("phone_number",)
-    list_filter = ("role", "is_active", "is_staff", "is_superuser", "date_joined")
+    list_filter = ("role", "is_active", "is_staff", "is_superuser", "is_deleted", "date_joined")
     fieldsets = (
         (None, {"fields": ("phone_number", "username", "password")}),
         (
@@ -75,6 +75,15 @@ class UserAdmin(DjangoUserAdmin):
             return format_html(f'<img src="{obj.profile_picture.url}" width="50" height="50";">')
 
     profile_pic_html.short_description = _("Profile picture")
+
+
+@admin.register(models.Device)
+class DeviceAdmin(admin.ModelAdmin):
+    list_display = ("user", "name", "device_type", "created_at", "id",)
+    list_display_links = ("user", "id",)
+    search_fields = ("user__phone_number", "user__first_name", "name", "device_type",)
+    exclude = ("is_deleted", "deleted_at",)
+    list_filter = ("created_at",)
 
 
 @admin.register(models.UserOTP)

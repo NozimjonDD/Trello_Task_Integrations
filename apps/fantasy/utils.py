@@ -43,6 +43,7 @@ def update_fixture_player_rnd_points(fixture):
             player_point = models.PlayerRoundPoint(
                 player_id=player.pk,
                 round_id=fixture.round_id,
+                fixture_id=fixture.pk,
                 total_point=0,
             )
 
@@ -53,10 +54,10 @@ def update_fixture_player_rnd_points(fixture):
                 is_lineup = True
         except football_models.Lineup.DoesNotExist:
             player_point.total_point = 0
-            player_point.minutes_played = 0
-            player_point.clean_sheet = 0
-            player_point.saves = 0
-            player_point.penalty_save = 0
+            player_point.minutes_played = None
+            player_point.clean_sheet = None
+            player_point.saves = None
+            player_point.penalty_save = None
             player_point.save()
             continue
 
@@ -83,7 +84,6 @@ def update_fixture_player_rnd_points(fixture):
             g_save_more_3 = 2
             g_yellow_card = -2
             g_red_card = -4
-            g_penalty_miss = 0
             g_penalty_save = 4
             g_goal_conceded_more_2 = -1
         elif player.position.short_name == "DF":
@@ -94,8 +94,7 @@ def update_fixture_player_rnd_points(fixture):
             g_save_more_3 = 0
             g_yellow_card = -1
             g_red_card = -3
-            g_penalty_miss = 0
-            g_penalty_save = 0
+            g_penalty_miss = -2
         elif player.position.short_name == "MF":
             g_goal = 5
             g_assist = 3

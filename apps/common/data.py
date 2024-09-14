@@ -46,6 +46,37 @@ class TariffTypeChoices(models.TextChoices):
 
 class TariffOrderStatusChoices(models.TextChoices):
     PENDING = "pending", _("Pending")
+    PAYMENT_PROCESSING = "payment_processing", _("Payment processing")
     SUCCESS = "success", _("Success")
     CANCELED = "canceled", _("Canceled")
     REJECTED = "rejected", _("Rejected")
+
+
+class OrderPaymentTypeChoices(models.TextChoices):
+    CLICK = "click", _("Click")
+    PAYME = "payme", _("Payme")
+    UZUM_BANK = "uzum_bank", _("Uzum bank")
+
+
+class TransactionStatusChoices(models.TextChoices):
+    PROCESSING = "processing", _("Processing")
+    FINISHED = "finished", _("Finished")
+    CANCELED = "canceled", _("Canceled")
+    ERROR = "error", _("Error")
+
+
+class NotificationTypeChoices(models.TextChoices):
+    INFORMATIONAL = "INFORMATIONAL", _("Informational")
+    USER_ENGAGEMENT = "USER_ENGAGEMENT", _("User Engagement")
+    TRANSACTIONAL = "TRANSACTIONAL", _("Transactional")
+    PROMOTIONAL = "PROMOTIONAL", _("Promotional")
+
+
+class NotificationDetailedEventTypes(models.TextChoices):
+    APP_VERSION_UPDATED = "APP_VERSION_UPDATED", _("App version updated")
+    COIN_ORDER_CREATED = "COIN_ORDER_CREATED", _("Coin order created")
+    COIN_ORDER_PAYMENT_PROCESSING = "COIN_ORDER_PAYMENT_PROCESSING", _("Coin order payment processing")
+    COIN_ORDER_PAYMENT_RECEIVED = "COIN_ORDER_PAYMENT_RECEIVED", _("Coin order payment received")
+    COIN_ORDER_COMPLETED = "COIN_ORDER_COMPLETED", _("Coin Order Completed")
+    COIN_ORDER_CANCELED = "COIN_ORDER_CANCELED", _("Coin Order Canceled")
+    COIN_ORDER_FAILED = "COIN_ORDER_FAILED", _("Coin Order Failed")

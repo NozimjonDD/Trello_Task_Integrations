@@ -566,6 +566,14 @@ class PlayerRoundPoint(BaseModel):
         related_name="+",
         verbose_name=_("Round"),
     )
+    fixture = models.ForeignKey(
+        to="football.Fixture",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name=_("Fixture"),
+        null=True,
+        blank=True,
+    )
     total_point = models.DecimalField(
         verbose_name=_("Total points"),
         max_digits=18,

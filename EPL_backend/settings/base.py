@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+import firebase_admin
+from firebase_admin import credentials
+
 import environ  # noqa
 from ..jazzmin import *  # noqa
 
@@ -50,6 +53,9 @@ THIRD_PARTY_APPS = [
     # "mptt",
     "auditlog",
     "rest_framework_simplejwt",
+
+    "ckeditor",
+    "ckeditor_uploader",
 ]
 INSTALLED_APPS = DJANGO_APPS + MY_APPS + THIRD_PARTY_APPS
 
@@ -221,3 +227,11 @@ OTP_EXPIRATION_TIME = 300  # seconds
 # SPORTMONKS
 SPORTMONKS_APIKEY = os.environ.get("SPORTMONKS_APIKEY", default="dummy")
 PREMIER_LEAGUE_ID = 8
+
+# CKEDITOR
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
+CKEDITOR_UPLOAD_PATH = "uploads/"
+
+# FIREBASE
+cred = credentials.Certificate("apps/notification/data/firebase-adminsdk.json")
+firebase_admin.initialize_app(cred)

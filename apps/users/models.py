@@ -19,7 +19,7 @@ class User(AbstractUser, BaseModel):
         error_messages={
             "unique": _("A user with that phone number already exists."),
         },
-        max_length=13,
+        max_length=100,
         validators=[common_utils.phone_number_validator]
     )
     username_validator = UnicodeUsernameValidator()
@@ -110,6 +110,17 @@ class User(AbstractUser, BaseModel):
 
         return data
 
+    def delete_account(self):
+        """
+        change user phone number to: deleted__+998901234567__timestamp
+        :return: None
+        """
+        self.is_active = False
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.phone_number = f"deleted__{self.phone_number}__{timezone.now().timestamp()}"
+        self.save()
+
 
 class AccountSettings(BaseModel):
     class Meta:
@@ -137,6 +148,24 @@ class AccountSettings(BaseModel):
 
     def __str__(self):
         return f"{self.user} - account settings"
+
+
+class Device(BaseModel):
+    class Meta:
+        db_table = "user_device"
+        verbose_name = _("User device")
+        verbose_name_plural = _("User devices")
+
+    user = models.ForeignKey(
+        to="users.User", on_delete=models.CASCADE, verbose_name=_("User"), related_name="devices"
+    )
+    device_id = models.CharField(verbose_name=_("Device ID"), max_length=255, null=True, unique=True)
+    fcm_token = models.CharField(verbose_name=_("FCM token"), max_length=255, unique=True)
+    name = models.CharField(verbose_name=_("Device name"), max_length=255)
+    device_type = models.CharField(verbose_name=_("Device type"), max_length=20)
+
+    def __str__(self):
+        return f"{self.user} - {self.name}"
 
 
 class GroupProxyModel(AbstractGroup):

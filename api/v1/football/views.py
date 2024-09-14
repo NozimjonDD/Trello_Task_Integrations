@@ -83,3 +83,15 @@ class FixtureListAPIView(generics.ListAPIView):
     def get_queryset(self):
         qs = self.queryset.select_related("home_club", "away_club", "state", )
         return qs
+
+
+class FixtureDetailAPIView(generics.RetrieveAPIView):
+    queryset = models.Fixture.objects.filter(
+        is_deleted=False, season__league__remote_id=settings.PREMIER_LEAGUE_ID
+    )
+    serializer_class = serializers.FixtureDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = self.queryset.prefetch_related("events", "statistics", "events__player", "events__related_player")
+        return qs

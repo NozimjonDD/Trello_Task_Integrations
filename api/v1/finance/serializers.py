@@ -3,26 +3,39 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 
-from api.v1.users.serializers import UserTariffCaseListSerializer
 from apps.finance import models
+from apps.common.data import TariffOrderStatusChoices
 
 
-class TariffListSerializer(serializers.ModelSerializer):
+# class TariffListSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = models.Tariff
+#         fields = (
+#             "id",
+#             "title",
+#             "description",
+#             "type",
+#             # "price",
+#             # "discount_price",
+#         )
+#
+#     def to_representation(self, instance):
+#         data = super().to_representation(instance)
+#         data["tariff_cases"] = UserTariffCaseListSerializer(instance.tariff_cases.all(), many=True).data
+#         return data
+
+
+class CoinTariffListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Tariff
+        model = models.CoinTariff
         fields = (
             "id",
             "title",
-            "description",
-            "type",
-            # "price",
-            # "discount_price",
+            "image",
+            "coin_amount",
+            "price",
+            "discount_price",
         )
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["tariff_cases"] = UserTariffCaseListSerializer(instance.tariff_cases.all(), many=True).data
-        return data
 
 
 class TariffOptionListSerializer(serializers.ModelSerializer):
@@ -70,4 +83,32 @@ class TariffOrderSerializer(serializers.ModelSerializer):
         validated_data["discount_price"] = validated_data["tariff_option"].discount_price
         instance = super().create(validated_data)
         instance.apply_tariff_order()
+        return instance
+
+
+class CoinOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CoinOrder
+        fields = (
+            "id",
+            "coin_tariff",
+            "payment_type",
+            "status",
+        )
+        extra_kwargs = {
+            "coin_tariff": {"required": True},
+            "payment_type": {"required": True},
+            "status": {"read_only": True},
+        }
+
+    @transaction.atomic
+    def create(self, validated_data):
+        validated_data["user"] = self.context["request"].user
+        validated_data["price"] = validated_data["coin_tariff"].price
+        validated_data["coin_amount"] = validated_data["coin_tariff"].coin_amount
+        validated_data["status"] = TariffOrderStatusChoices.PAYMENT_PROCESSING
+
+        if validated_data["coin_tariff"].discount_price:
+            validated_data["price"] = validated_data["coin_tariff"].discount_price
+        instance = super().create(validated_data)
         return instance

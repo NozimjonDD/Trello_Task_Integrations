@@ -6,10 +6,10 @@ from api.v1.finance import serializers
 from apps.finance import models
 
 
-class TariffListAPIView(ListAPIView):
-    queryset = models.Tariff.objects.all()
-    permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = serializers.TariffListSerializer
+# class TariffListAPIView(ListAPIView):
+#     queryset = models.Tariff.objects.all()
+#     permission_classes = (permissions.IsAuthenticated,)
+#     serializer_class = serializers.TariffListSerializer
 
 
 class TariffOptionListAPIView(ListAPIView):
@@ -26,3 +26,17 @@ class TariffOrderAPIView(CreateAPIView):
     model = models.TariffOrder
     permission_classes = (api_permissions.TeamCompleteUserPermission,)
     serializer_class = serializers.TariffOrderSerializer
+
+
+class CoinTariffListAPIView(ListAPIView):
+    queryset = models.CoinTariff.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.CoinTariffListSerializer
+    pagination_class = None
+    search_fields = ["title", "coin_amount"]
+
+
+class CoinOrderAPIView(CreateAPIView):
+    model = models.CoinOrder
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.CoinOrderSerializer
